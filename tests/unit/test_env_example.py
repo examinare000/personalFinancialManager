@@ -27,6 +27,7 @@ def test_envExampleが必要なキーを網羅する(repo_root: Path) -> None:
         "PG_PASSWORD_FILE=",
         "API_HOST=",
         "API_PORT=",
+        "FLASK_DEBUG=",
         "LOG_LEVEL=",
         "WORKER_HEARTBEAT_PATH=",
         "TZ=",
