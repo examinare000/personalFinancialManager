@@ -8,11 +8,14 @@
 ## ローカル開発の起動手順
 
 1. uv（Astral）と Docker をインストールしておく。Python 3.12 は uv が自動取得する。
-2. シークレット雛形を複製し、安全な値に書き換える:
+2. シークレット雛形を複製し、安全な値に書き換える（4 種すべて必須。docs/design/05-security-model.md §5.1 準拠で `chmod 600` を強制する）:
    ```bash
    cp secrets/pg_password.txt.example secrets/pg_password.txt
-   chmod 600 secrets/pg_password.txt
-   # 必要に応じて anthropic_key / paypal_api_secret / gmail_oauth_token も同様に複製
+   cp secrets/anthropic_key.txt.example secrets/anthropic_key.txt
+   cp secrets/paypal_api_secret.txt.example secrets/paypal_api_secret.txt
+   cp secrets/gmail_oauth_token.json.example secrets/gmail_oauth_token.json
+   chmod 600 secrets/pg_password.txt secrets/anthropic_key.txt \
+             secrets/paypal_api_secret.txt secrets/gmail_oauth_token.json
    cp .env.example .env
    ```
 3. 依存をインストールする:
@@ -28,6 +31,27 @@
    ```bash
    make check
    ```
+
+## DB 初期化（alembic）
+
+Phase 1.1 以降のマイグレーション本体投入後、開発・本番ともに以下の手順で
+スキーマを最新化する。Phase 0 時点ではマイグレーションファイル本体は
+未作成のため、コマンドは「No-op で 0 件適用」を確認するための疎通検証に位置づく。
+
+```bash
+# 1) postgres コンテナを起動して healthy になるまで待つ
+docker compose up -d postgres
+
+# 2) api コンテナで alembic upgrade head を実行する（環境変数 DATABASE_URL を再利用）
+docker compose run --rm api alembic upgrade head
+```
+
+ローカル uv 環境（コンテナ外）から直接適用する場合は以下:
+
+```bash
+DATABASE_URL=postgresql://kakeibo:devpassword@localhost:5432/kakeibo \
+    uv run alembic upgrade head
+```
 
 ## Docker Compose スタックの起動
 
@@ -64,7 +88,7 @@ docker compose down
 | `postgres` | DB（PostgreSQL 16） | 本番同等 |
 | `api` | Flask REST API | `/health` のみ（Phase 3.1 で本実装） |
 | `worker` | バッチワーカー | heartbeat ループのみ（Phase 2.x で本実装） |
-| `ui` | ダッシュボード | nginx + 静的 HTML（Phase 3 で React に置換） |
+| `ui` | ダッシュボード | Next.js 14+（App Router / standalone build, Phase 3 でロジックを実装） |
 | `caddy` | リバースプロキシ | 設定済み（profile: prod） |
 | `backup` | 日次 pg_dump | sleep ループ常駐（profile: prod） |
 

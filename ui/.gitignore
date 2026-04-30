@@ -1,0 +1,22 @@
+# Next.js / Node 関連の生成物。リポジトリルートの .gitignore でも
+# node_modules は除外しているが、ui ディレクトリ単体で開発する際の
+# 認知負荷を下げるため重複して明示する（DRY 例外）。
+
+# 依存ツリー（package-lock.json で再現するため git 追跡しない）
+node_modules/
+
+# Next.js ビルド成果物
+.next/
+out/
+next-env.d.ts
+
+# ローカル環境変数（雛形は repo ルートの .env.example）
+.env.local
+.env.development.local
+.env.production.local
+
+# ログ・OS メタ
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store

@@ -33,8 +33,12 @@ venv
 .coverage
 htmlcov
 
-# Node 関連（UI 以外のコンテナで不要）
+# Node 関連（UI 以外のコンテナで不要）。UI コンテナでも build context から
+# ホスト側の依存ツリー / ビルド成果物を排除し、コンテナ内で再生成させる。
 node_modules
+ui/node_modules
+ui/.next
+ui/out
 
 # シークレット（COPY しない / Docker secret 経由で渡す）
 secrets/

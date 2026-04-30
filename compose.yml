@@ -107,11 +107,15 @@ services:
     networks: [external]
     restart: unless-stopped
     healthcheck:
-      # nginx:1.27-alpine には busybox の wget が同梱されている。
-      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000/ || exit 1"]
+      # node:20-alpine には wget / curl が同梱されないため、Node 内蔵 http で
+      # / を叩いて 200 のみ healthy 判定する（ui/Dockerfile の HEALTHCHECK と
+      # 同じプローブ。api/Dockerfile の urllib プローブと同じ思想）。
+      test:
+        - "CMD-SHELL"
+        - "node -e \"require('http').get('http://localhost:3000/', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))\" || exit 1"
       interval: 30s
       timeout: 5s
-      start_period: 5s
+      start_period: 10s
       retries: 3
 
   caddy:

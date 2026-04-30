@@ -18,11 +18,20 @@ services:
     environment:
       # 開発時のみ DEBUG ログを有効化する
       LOG_LEVEL: DEBUG
+    # DoD5: ホスト側の編集が即時にコンテナへ反映されるよう、
+    # editable install 済み（uv sync）の src ツリーを bind mount する。
+    # api/Dockerfile:37 で COPY 済みのパス /app/src と一致させる。
+    volumes:
+      - ./src:/app/src
 
   worker:
     # 開発では既定で worker を起動しない。明示的に
     # `docker compose --profile worker up worker` で起動する。
     profiles: ["worker"]
+    # DoD5: api と同じ理由で src を bind mount する。
+    # worker/Dockerfile も /app/src に COPY しているため整合する。
+    volumes:
+      - ./src:/app/src
 
   ui:
     ports:
