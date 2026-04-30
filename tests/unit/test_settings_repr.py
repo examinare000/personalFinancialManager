@@ -60,8 +60,10 @@ def test_settings_reprがpasswordをマスクする(
     assert secret_value not in rendered, (
         f"repr(settings) に生のパスワードが露出しています: {rendered!r}"
     )
-    assert "[REDACTED]" in rendered, (
-        f"機微フィールドのマスク表現 [REDACTED] が含まれていません: {rendered!r}"
+    # 他の機微フィールド（anthropic_api_key 等）のマスクで条件を満たせてしまう
+    # 曖昧アサートを避け、pg_password 自体がマスクされていることを直接検証する。
+    assert "pg_password='[REDACTED]'" in rendered, (
+        f"pg_password がマスク表現で出力されていません: {rendered!r}"
     )
 
 
