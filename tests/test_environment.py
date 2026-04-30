@@ -8,7 +8,6 @@ Phase 0 の開発環境整備で「インフラとして整っているべきも
 
 from __future__ import annotations
 
-import os
 import shutil
 import subprocess
 import sys
@@ -17,37 +16,14 @@ from pathlib import Path
 
 import pytest
 
+from tests._compose_utils import extract_service_block as _extract_service_block
+
 # テスト #2 / #3 で kakeibo パッケージを動的に import するため、
 # src レイアウトを sys.path に追加する。プロジェクト同梱テストでは
 # 一般的な手法（pip install -e なしでも動く）。
 _SRC = Path(__file__).resolve().parent.parent / "src"
 if str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
-
-
-def _extract_service_block(config_text: str, service_name: str) -> str | None:
-    """compose config 出力から特定サービスのブロックを抽出する。
-
-    docker compose config の出力では各サービスは indent 2 で `  <name>:` と
-    始まり、配下のフィールドは indent 4 以上で続く。次のサービス境界は
-    再び `\\n  <英字始まりの名前>:` のパターンになる。
-
-    YAML パーサ（PyYAML）を導入すれば堅牢だが、テスト専用の依存を増やしたく
-    ないため、軽量な正規表現でブロック抽出を行う。
-    """
-    import re
-
-    pattern = rf"\n  {re.escape(service_name)}:\n"
-    match = re.search(pattern, config_text)
-    if match is None:
-        return None
-    start = match.end()
-    # 次の indent2 のサービス境界を探す。compose config は alphabetical 順で
-    # サービスを列挙し、各サービスは `\n  <name>:\n` で始まる。
-    next_match = re.search(r"\n  [a-z][a-z0-9_-]*:\n", config_text[start:])
-    if next_match is None:
-        return config_text[start:]
-    return config_text[start : start + next_match.start()]
 
 
 def test_pyprojectが妥当なTOMLでパースできる(repo_root: Path) -> None:
@@ -443,8 +419,3 @@ def test_subagent定義ファイルが揃っている(repo_root: Path) -> None:
         frontmatter = content[4:end]
         for key in ("name:", "description:", "tools:"):
             assert key in frontmatter, f"{name} の frontmatter に '{key}' がありません"
-
-
-# ruff のチェックでテスト関数名が日本語であることを許容する設定が
-# pyproject.toml 側の per-file-ignores で明示される前提。
-_ = os  # ruff F401 回避（将来の拡張で os を使う想定でインポート維持）
