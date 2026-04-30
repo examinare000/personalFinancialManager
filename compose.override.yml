@@ -1,0 +1,35 @@
+# 開発環境 override。`docker compose up` 時に自動でマージされる。
+#
+# 開発上の差分:
+# - Postgres を localhost:5432 に公開（DB GUI から直接接続するため）
+# - api を 127.0.0.1:8000 に公開（curl / Postman で疎通確認）
+# - ui を 127.0.0.1:3000 に公開（ブラウザで直接ダッシュボードを確認）
+# - worker は profiles で隔離可能にし、開発時にバッチ常駐を抑制
+# - Caddy は本番でしか起動しないので profiles=prod 専用にして開発からは外す
+
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  api:
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      # 開発時のみ DEBUG ログを有効化する
+      LOG_LEVEL: DEBUG
+
+  worker:
+    # 開発では既定で worker を起動しない。明示的に
+    # `docker compose --profile worker up worker` で起動する。
+    profiles: ["worker"]
+
+  ui:
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  caddy:
+    profiles: ["prod"]
+
+  backup:
+    profiles: ["prod"]

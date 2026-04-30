@@ -1,0 +1,29 @@
+# Caddy リバースプロキシ設定。
+# 設計準拠: docs/design/04-deployment-stack.md §6
+#
+# - Tailscale 経由でしかアクセスできないため、自己署名証明書（local_certs）で運用
+# - /api/* を api:8000 に、それ以外を ui:3000 にプロキシ
+# - 公衆 ACME は無効化（auto_https off）
+
+{
+    auto_https off
+    local_certs
+}
+
+:443 {
+    tls internal
+
+    handle_path /api/* {
+        reverse_proxy api:8000
+    }
+
+    handle {
+        reverse_proxy ui:3000
+    }
+
+    encode gzip
+    log {
+        output stdout
+        format console
+    }
+}
