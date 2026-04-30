@@ -66,7 +66,7 @@ def _collect_referenced_names(tree: ast.Module) -> set[str]:
     """
     referenced: set[str] = set()
     for node in ast.walk(tree):
-        if isinstance(node, ast.Name):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
             referenced.add(node.id)
     return referenced
 
