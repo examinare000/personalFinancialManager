@@ -64,7 +64,7 @@ docker compose down
 | `postgres` | DB（PostgreSQL 16） | 本番同等 |
 | `api` | Flask REST API | `/health` のみ（Phase 3.1 で本実装） |
 | `worker` | バッチワーカー | heartbeat ループのみ（Phase 2.x で本実装） |
-| `ui` | ダッシュボード | nginx + 静的 HTML（Phase 3 で React に置換） |
+| `ui` | ダッシュボード | Next.js 14+（App Router / standalone build, Phase 3 でロジックを実装） |
 | `caddy` | リバースプロキシ | 設定済み（profile: prod） |
 | `backup` | 日次 pg_dump | sleep ループ常駐（profile: prod） |
 
