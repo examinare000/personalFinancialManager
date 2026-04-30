@@ -39,6 +39,9 @@ def test_ui_packagejsonがNextjsプロジェクトとして妥当(repo_root: Pat
     assert re.search(r"(>=\s*20|\b20(\.|\b))", node_version), (
         f"engines.node は Node 20 LTS 以上を要求すること: {node_version!r}"
     )
+    assert not re.search(r"<\s*20\b", node_version), (
+        f"engines.node に Node 20 未満を許容する範囲は指定できません: {node_version!r}"
+    )
 
 
 def test_ui_appディレクトリにルートレイアウトとページが存在(repo_root: Path) -> None:
