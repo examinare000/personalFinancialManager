@@ -1,0 +1,56 @@
+# Docker ビルドコンテキストから除外する。
+# シークレット混入とビルド肥大化を避けるため、明示的に列挙する。
+
+# VCS / IDE
+.git
+.gitignore
+.gitattributes
+.idea
+.vscode
+.takt
+
+# 開発用メタ
+agent-rules/
+docs/
+.claude/
+# README.md は pyproject.toml の readme フィールドが参照するため build context に残す。
+# uv sync 時に hatchling が読み込もうとして OSError になるのを防ぐ目的。
+CLAUDE.md
+GEMINI.md
+AGENT.md
+
+# Python キャッシュ・仮想環境
+__pycache__
+*.pyc
+*.pyo
+.venv
+venv
+.uv
+.pytest_cache
+.ruff_cache
+.pyright
+.mypy_cache
+.coverage
+htmlcov
+
+# Node 関連（UI 以外のコンテナで不要）
+node_modules
+
+# シークレット（COPY しない / Docker secret 経由で渡す）
+secrets/
+*.env
+.env
+
+# 取込・データ・バックアップは bind mount で渡すため image に含めない
+data/
+inbox/
+archive/
+dead_letter/
+backup/
+caddy_data/
+caddy_config/
+
+# ビルド成果物
+dist/
+build/
+*.egg-info

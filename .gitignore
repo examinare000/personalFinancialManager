@@ -1,5 +1,78 @@
+# 一般のメタファイル
 agent-rules/
+.idea/
+.DS_Store
+.takt/
+
+# 既存ファイル（プロジェクト共通）
 CLAUDE.md
 GEMINI.md
 AGENT.md
-.idea/
+
+# ── シークレット類（必須） ──
+# 実体は絶対にコミットしない。example だけ追跡する。
+secrets/*.txt
+secrets/*.json
+secrets/*.pem
+secrets/*.age
+!secrets/*.example
+!secrets/.gitkeep
+*.env
+.env
+.env.local
+.env.*.local
+
+# ── 取込・データ ──
+# 実データはローカル / NAS のみで保持し、Git には含めない。
+# .gitkeep でディレクトリ自体は追跡する。
+data/
+inbox/
+inbox/**
+archive/
+archive/**
+dead_letter/
+dead_letter/**
+backup/
+backup/**
+caddy_data/
+caddy_config/
+!inbox/.gitkeep
+!archive/.gitkeep
+!dead_letter/.gitkeep
+!backup/.gitkeep
+!data/.gitkeep
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyright/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.venv/
+venv/
+
+# uv のキャッシュ・実行成果物。uv.lock は追跡対象。
+.uv/
+
+# ── Node.js（UI 用、Phase 3 以降） ──
+node_modules/
+ui/node_modules/
+ui/dist/
+ui/.vite/
+
+# ── ログ・一時ファイル ──
+*.log
+*.tmp
+*.swp
+*.bak
