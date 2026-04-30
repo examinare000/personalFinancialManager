@@ -17,7 +17,7 @@
 ### 1. Docker Compose 構成
 - `compose.yml` にて `api`, `worker`, `ui`, `postgres`, `caddy`, `backup` の 6 サービスが定義されている。
 - ネットワークが `internal` (DB用) と `external` (外部通信用) に適切に分離されている。
-- 各コンテナに `healthcheck` が設定されており、特に Python (`urllib`) や Node.js (`http` module) を用いた内蔵プロンプトにより、最小限の依存で生存確認が可能となっている。
+- 各コンテナに `healthcheck` が設定されており、特に Python (`urllib`) や Node.js (`http` module) を用いた内蔵プローブにより、最小限の依存で生存確認が可能となっている。
 
 ### 2. Python 環境 (API / Worker)
 - `uv` を用いた依存関係管理が導入されており、`pyproject.toml` にて extras (`mail`, `pdf`, `llm`) が適切に分離されている。
