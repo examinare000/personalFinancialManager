@@ -50,10 +50,24 @@ COPY worker/src /app/worker/src
 # ── runtime stage ──
 FROM python:3.12-slim AS runtime
 
-# lxml の実行時に必要な共有ライブラリだけ runtime に入れる（軽量化）。
+# 実行時に必要な共有ライブラリ。
+# - libxml2 / libxslt1.1: lxml（メールパーサ）
+# - libatomic1: pyright が内蔵 nodeenv で取得する prebuilt node が
+#   libatomic.so.1 を要求する（dev extras に同梱、ADR-015 で worker は
+#   テスト・lint・typecheck の実行基盤を兼ねるため必須）。
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libxml2 libxslt1.1 \
+    && apt-get install -y --no-install-recommends \
+        libxml2 libxslt1.1 libatomic1 \
     && rm -rf /var/lib/apt/lists/*
+
+# docker CLI + docker compose plugin を持ち込む（ADR-015 §テストの所在）。
+# tests/ に compose 構文検証テスト群があり、worker コンテナから
+# `docker compose config` を叩けるようにするため。
+# Docker daemon は /var/run/docker.sock の bind mount で host のものを再利用する
+# （compose.override.yml で設定）。
+COPY --from=docker:27-cli /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker:27-cli /usr/local/libexec/docker/cli-plugins/docker-compose \
+                          /usr/local/libexec/docker/cli-plugins/docker-compose
 
 RUN groupadd --gid 1000 kakeibo \
     && useradd --uid 1000 --gid 1000 --create-home --shell /bin/bash kakeibo

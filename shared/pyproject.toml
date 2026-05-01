@@ -176,6 +176,16 @@ include = [
     "../worker/tests",
     "../postgres/src/alembic",
 ]
+# CWD = /workspace/shared を起点として、リポジトリルート（=/workspace）と
+# 各サービスの src ルートを import 解決パスに加える。
+# - リポジトリルート: ``tests`` パッケージを top-level として import 可能にする
+# - 各 src: ``kakeibo_api`` / ``kakeibo_worker`` / ``kakeibo_shared`` を解決
+extraPaths = [
+    "..",
+    ".",
+    "../api/src",
+    "../worker/src",
+]
 exclude = [
     "**/__pycache__",
     "**/.venv",

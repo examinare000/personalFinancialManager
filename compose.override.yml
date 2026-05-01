@@ -40,8 +40,14 @@ services:
     # `docker compose --profile worker up worker` で起動する。
     # テストは profiles に関係なく `docker compose run --rm worker pytest` で実行可能。
     profiles: ["worker"]
+    # ADR-015 §テストの所在: docker CLI を使う compose 構文検証テストを
+    # コンテナ内で動かすため、host の docker daemon socket を bind mount し、
+    # root ユーザで起動する（kakeibo ユーザでは socket への gid 一致が
+    # ホスト OS によって変わり再現性が落ちるため、開発時のみ root 化）。
+    user: root
     volumes:
       - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       # worker は dev extras を持つテスト基盤も兼ねるため、api 側のソースも
       # PYTHONPATH に含める（api の Flask アプリテストを worker で実行するため）。
