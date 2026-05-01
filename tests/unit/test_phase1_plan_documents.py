@@ -2,22 +2,34 @@
 
 このテストは、Phase1 タスク分解プランファイル群
 (``docs/plans/02-*.md`` 〜 ``docs/plans/09-*.md``) と、それらを俯瞰する
-インデックスファイル (``docs/plans/10-*.md``) が、指示書および計画レポートで
-定めた以下の契約を満たすことを構造的に検証する。
+**インデックスファイル** (``docs/plans/10-*.md``)、および各 Phase の
+**サービス別タスク振り分け文書** (``docs/plans/11-*.md`` /
+``docs/plans/12-*.md`` / ``docs/plans/13-*.md``) が、指示書および
+計画レポートで定めた契約を満たすことを構造的に検証する。
+
+「俯瞰インデックス」と「サービス別タスク振り分け」は別概念として明示的に
+区別する立場を取る。両者を同一の glob (``1[0-9]-*.md``) で同一視すると、
+振り分け文書の追加で俯瞰インデックスの一意性が崩れる脆弱なテストになるため、
+俯瞰インデックスは ``10-*.md`` のみで識別する。サービス別振り分け文書
+(11/12/13) は Phase 番号別に別個のファイル名規約 (``NN-phaseN-service-
+assignments.md``) を持ち、本文構造の検証は最低限の「存在性」と「Phase
+連番との整合」に限定する（過度に厳密化して将来の節構成変更を縛らない）。
 
 検証対象（指示書「成果物」と計画レポート §2.1 タスク要素一覧）:
 
 1. 02〜09 の連番でタスクプランファイル 8 本が漏れなく存在する
-2. インデックスファイルが 10 番台で 1 本だけ存在する
+2. **俯瞰**インデックスファイルが ``10-*.md`` で 1 本だけ存在する
 3. 各プランファイルが必須 10 セクションを含む
    - タスク概要 / 目的・背景 / スコープ / 依存タスク / 後続タスク /
      対象ファイル/モジュール / 実装方針 / 受入条件 / テスト計画 /
      想定 issue タイトル・ブランチ名
 4. 各プランファイルが原典 ``01-development-plan.md`` §6 のブランチ名を
    本文に保持する（タスク識別の正本との不整合を即時検出するため）
-5. インデックスファイルが Phase1 全体ゴール / タスク一覧表 /
+5. 俯瞰インデックスが Phase1 全体ゴール / タスク一覧表 /
    実装順序 / 依存関係図 の必須要素を含み、8 つのプランファイル名を
    いずれも参照している
+6. サービス別タスク振り分け文書が Phase 1/2/3 ごとに 1 本ずつ存在し、
+   frontmatter で対応 Phase 番号を宣言している
 
 設計準拠:
 - 指示書「タスク指示書: Phase1 のタスク分解と実装プラン作成」
@@ -73,6 +85,16 @@ INDEX_REQUIRED_SECTIONS: list[tuple[str, list[tuple[str, ...]]]] = [
     ("依存関係図", [("依存関係",)]),
 ]
 
+# サービス別タスク振り分け文書の連番プレフィックスと、対応する Phase 番号。
+# (number_prefix, phase) で「``NN-phaseN-service-assignments.md`` が一意に
+# 存在し、frontmatter ``phase: N`` を保持する」契約を表現する。Phase 別の
+# 内部節構成は Planner の裁量に委ね、本テストでは検証しない。
+SERVICE_ASSIGNMENTS_SPEC: list[tuple[str, int]] = [
+    ("11", 1),
+    ("12", 2),
+    ("13", 3),
+]
+
 
 @pytest.fixture
 def plans_dir(repo_root: Path) -> Path:
@@ -112,9 +134,7 @@ def _has_section(content: str, alternatives: list[tuple[str, ...]]) -> bool:
 
 def test_docs_plansディレクトリが存在する(plans_dir: Path) -> None:
     """前提条件: 出力先ディレクトリ ``docs/plans/`` が存在すること。"""
-    assert plans_dir.is_dir(), (
-        f"Phase1 プラン出力先ディレクトリが存在しません: {plans_dir}"
-    )
+    assert plans_dir.is_dir(), f"Phase1 プラン出力先ディレクトリが存在しません: {plans_dir}"
 
 
 def test_phase1のタスクプランが02から09の連番で8本そろう(plans_dir: Path) -> None:
@@ -135,15 +155,18 @@ def test_phase1のタスクプランが02から09の連番で8本そろう(plans
     )
 
 
-def test_phase1インデックスファイルが10番台で1本のみ存在する(plans_dir: Path) -> None:
+def test_phase1俯瞰インデックスファイルが10番のみで1本だけ存在する(
+    plans_dir: Path,
+) -> None:
     """指示書「タスクプランの最終番号の次の番号」の契約を検証する。
 
-    インデックスファイルは Phase1 を俯瞰する唯一の入口になるため、
-    複数本生成されると到達経路が分散して指示書の意図に反する。
+    俯瞰インデックスは Phase1 を俯瞰する唯一の入口になるため、複数本生成
+    されると到達経路が分散して指示書の意図に反する。サービス別タスク振り分け
+    文書 (11/12/13) は別概念であり、本テストの一意性条件には含めない。
     """
-    index_files = sorted(plans_dir.glob("1[0-9]-*.md"))
+    index_files = sorted(plans_dir.glob("10-*.md"))
     assert len(index_files) == 1, (
-        f"Phase1 インデックスファイルは 10 番台で 1 本のみ想定。\n"
+        f"Phase1 俯瞰インデックスファイルは 10-*.md で 1 本のみ想定。\n"
         f"  発見数: {len(index_files)}\n"
         f"  発見ファイル: {[p.name for p in index_files]}"
     )
@@ -200,17 +223,19 @@ def test_各プランファイルが必須10セクションを含む(
         if not _has_section(content, alternatives):
             missing.append(section_label)
 
-    assert not missing, (
-        f"{plan_file.name} に必須セクションが見出しとして存在しません: {missing}"
-    )
+    assert not missing, f"{plan_file.name} に必須セクションが見出しとして存在しません: {missing}"
 
 
-def test_インデックスファイルが必須セクションを含む(plans_dir: Path) -> None:
-    """指示書「インデックスファイルに含める内容」を網羅検証する。"""
-    index_files = sorted(plans_dir.glob("1[0-9]-*.md"))
+def test_俯瞰インデックスファイルが必須セクションを含む(plans_dir: Path) -> None:
+    """指示書「インデックスファイルに含める内容」を網羅検証する。
+
+    対象は 10-*.md の俯瞰インデックスのみ。サービス別タスク振り分け文書
+    (11/12/13) は内部節構成を Planner 裁量とするため、本テストでは
+    必須セクション検証の対象外とする。
+    """
+    index_files = sorted(plans_dir.glob("10-*.md"))
     assert len(index_files) == 1, (
-        f"インデックスファイルが一意に特定できません: "
-        f"{[p.name for p in index_files]}"
+        f"俯瞰インデックスファイルが一意に特定できません: {[p.name for p in index_files]}"
     )
     index_file = index_files[0]
     content = index_file.read_text(encoding="utf-8")
@@ -220,24 +245,23 @@ def test_インデックスファイルが必須セクションを含む(plans_d
         if not _has_section(content, alternatives):
             missing.append(section_label)
 
-    assert not missing, (
-        f"{index_file.name} に必須セクションが見出しとして存在しません: {missing}"
-    )
+    assert not missing, f"{index_file.name} に必須セクションが見出しとして存在しません: {missing}"
 
 
-def test_インデックスファイルが8つのプランファイルすべてを参照する(
+def test_俯瞰インデックスファイルが8つのプランファイルすべてを参照する(
     plans_dir: Path,
 ) -> None:
-    """インデックスから各プランへの到達経路（Markdown リンク）を検証する。
+    """俯瞰インデックスから各プランへの到達経路（Markdown リンク）を検証する。
 
     指示書「全タスクの一覧、依存関係、実装順序を俯瞰できる構成」かつ
     「依存関係はプランファイル名で参照」の契約に基づき、すべての連番プラン
-    ファイル名がインデックス本文に登場することを必須とする。
+    ファイル名が俯瞰インデックス本文に登場することを必須とする。サービス別
+    タスク振り分け文書 (11/12/13) はサブディレクトリへのディスパッチが主
+    責務であり、原典プラン全 8 本の網羅参照は要求しない（責務分離）。
     """
-    index_files = sorted(plans_dir.glob("1[0-9]-*.md"))
+    index_files = sorted(plans_dir.glob("10-*.md"))
     assert len(index_files) == 1, (
-        f"インデックスファイルが一意に特定できません: "
-        f"{[p.name for p in index_files]}"
+        f"俯瞰インデックスファイルが一意に特定できません: {[p.name for p in index_files]}"
     )
     index_content = index_files[0].read_text(encoding="utf-8")
 
@@ -293,16 +317,60 @@ def test_各プランファイルの依存タスク参照がプランファイ�
             section_body.append(line)
 
     body_text = "\n".join(section_body).strip()
-    assert body_text, (
-        f"{matches[0].name} に「依存タスク」セクションの本文がありません"
-    )
+    assert body_text, f"{matches[0].name} に「依存タスク」セクションの本文がありません"
 
     # 依存があれば 0X-*.md 形式で示すか、なければその旨が明示されていること。
-    has_plan_ref = any(
-        f"0{i}-" in body_text for i in range(2, 10)
-    )
+    has_plan_ref = any(f"0{i}-" in body_text for i in range(2, 10))
     declares_none = any(token in body_text for token in ("なし", "無し", "None"))
     assert has_plan_ref or declares_none, (
         f"{matches[0].name} の「依存タスク」セクションに、依存先プランファイル名 "
         f"(0X-*.md) も「なし」表明もありません。本文:\n{body_text}"
+    )
+
+
+def _extract_frontmatter(content: str) -> dict[str, str]:
+    """Markdown ファイル先頭の YAML frontmatter を素朴な ``key: value`` で
+    辞書化する。``yaml`` 依存を持ち込まずに ``phase`` 値だけ確認するため、
+    入れ子・リスト・複数行値は対象外（本テストでは登場しない）。
+    """
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return {}
+    result: dict[str, str] = {}
+    for line in lines[1:]:
+        if line.strip() == "---":
+            break
+        if ":" not in line:
+            continue
+        key, _, value = line.partition(":")
+        result[key.strip()] = value.strip()
+    return result
+
+
+@pytest.mark.parametrize(
+    ("number_prefix", "phase"),
+    SERVICE_ASSIGNMENTS_SPEC,
+    ids=[f"{prefix}=phase{phase}" for prefix, phase in SERVICE_ASSIGNMENTS_SPEC],
+)
+def test_サービス別タスク振り分け文書がphase別に1本ずつ存在する(
+    plans_dir: Path, number_prefix: str, phase: int
+) -> None:
+    """サービス別タスク振り分け文書 (11/12/13) が Phase 1/2/3 ごとに 1 本ずつ
+    存在し、frontmatter の ``phase`` 値が連番と整合することを検証する。
+
+    俯瞰インデックス (10-*.md) と振り分け文書 (11/12/13) を別概念として
+    扱う設計判断（モジュールdocstring 参照）に基づき、振り分け文書側にも
+    最低限の存在性検証を置く。Phase 番号と連番プレフィックスの食い違いは
+    インデックス全体の信頼を失わせるため、frontmatter で固定する。
+    """
+    matches = sorted(plans_dir.glob(f"{number_prefix}-phase{phase}-service-assignments.md"))
+    assert len(matches) == 1, (
+        f"サービス別タスク振り分け文書 {number_prefix}-phase{phase}-"
+        f"service-assignments.md が一意に存在しません。発見: "
+        f"{[p.name for p in matches]}"
+    )
+    frontmatter = _extract_frontmatter(matches[0].read_text(encoding="utf-8"))
+    assert frontmatter.get("phase") == str(phase), (
+        f"{matches[0].name} の frontmatter ``phase`` が {phase} と一致しません: "
+        f"{frontmatter.get('phase')!r}"
     )
