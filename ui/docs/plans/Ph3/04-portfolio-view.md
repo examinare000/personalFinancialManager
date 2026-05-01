@@ -19,7 +19,7 @@ last_updated: 2026-05-01
 
 ## 担当サービス
 
-`compose.yml` `ui` サービス。`ui/app/portfolio/` にポートフォリオページを追加。
+`compose.yml` `ui` サービス。`ui/src/app/portfolio/` にポートフォリオページを追加。
 
 ## 上流・下流
 
@@ -46,7 +46,7 @@ last_updated: 2026-05-01
 | `ui/components/charts/PortfolioPieChart.tsx` | recharts `PieChart`（Client Component） |
 | `ui/components/portfolio/HoldingWarnings.tsx` | 評価額 NULL 銘柄リスト |
 | `ui/components/portfolio/SnapshotDate.tsx` | 直近スナップショット日付表示 |
-| `ui/app/portfolio/page.tsx` | ポートフォリオページ |
+| `ui/src/app/portfolio/page.tsx` | ポートフォリオページ |
 | 各 `__tests__/` | 構成比計算 + 警告 + 空状態 |
 
 ## 実装方針
@@ -84,7 +84,7 @@ last_updated: 2026-05-01
 3. `ui/lib/api/portfolio.ts` で `useHoldingComposition` 実装
 4. `ui/components/charts/PortfolioPieChart.tsx` を実装
 5. `ui/components/portfolio/{HoldingWarnings,SnapshotDate}.tsx` を実装
-6. `ui/app/portfolio/page.tsx` で統合
+6. `ui/src/app/portfolio/page.tsx` で統合
 
 ### 3. Refactor
 
@@ -134,7 +134,7 @@ Phase 3.5 ポートフォリオ構成ビューを実装。
 - ui/lib/portfolio/{composition,labels}.ts
 - ui/components/charts/PortfolioPieChart.tsx
 - ui/components/portfolio/{HoldingWarnings,SnapshotDate}.tsx
-- ui/app/portfolio/page.tsx
+- ui/src/app/portfolio/page.tsx
 - 各 __tests__/
 
 ## 検証結果

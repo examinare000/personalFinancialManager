@@ -19,7 +19,7 @@ last_updated: 2026-05-01
 
 | 範囲 | Phase 2 での扱い |
 |---|---|
-| Next.js アプリ（`ui/app/`） | 変更なし |
+| Next.js アプリ（`ui/src/app/`） | 変更なし |
 | Dockerfile / `package.json` | 変更なし |
 | `tests/unit/test_ui_nextjs.py` | 既存挙動を維持 |
 

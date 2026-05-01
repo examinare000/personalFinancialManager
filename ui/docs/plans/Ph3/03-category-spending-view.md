@@ -19,7 +19,7 @@ last_updated: 2026-05-01
 
 ## 担当サービス
 
-`compose.yml` `ui` サービス。`ui/app/categories/` にカテゴリ支出ページを追加。
+`compose.yml` `ui` サービス。`ui/src/app/categories/` にカテゴリ支出ページを追加。
 
 ## 上流・下流
 
@@ -46,7 +46,7 @@ last_updated: 2026-05-01
 | `ui/components/charts/CategoryStackedBar.tsx` | 積み上げ棒グラフ（recharts `BarChart` + `Bar` 複数） |
 | `ui/components/tables/CategorySpendingTable.tsx` | 表（クリックで子展開） |
 | `ui/components/MonthSelector.tsx` | 月選択 |
-| `ui/app/categories/page.tsx` | カテゴリページ |
+| `ui/src/app/categories/page.tsx` | カテゴリページ |
 | 各 `__tests__/` | Render + ドリルダウン + 未分類表示 |
 
 ## 実装方針
@@ -80,7 +80,7 @@ last_updated: 2026-05-01
 2. `ui/components/charts/CategoryStackedBar.tsx` 実装
 3. `ui/components/tables/CategorySpendingTable.tsx` 実装（行クリックで子展開）
 4. `ui/components/MonthSelector.tsx` 実装
-5. `ui/app/categories/page.tsx` で統合
+5. `ui/src/app/categories/page.tsx` で統合
 
 ### 3. Refactor
 
@@ -129,7 +129,7 @@ Phase 3.4 カテゴリ別支出ビューを実装。
 - ui/components/charts/CategoryStackedBar.tsx
 - ui/components/tables/CategorySpendingTable.tsx
 - ui/components/MonthSelector.tsx
-- ui/app/categories/page.tsx
+- ui/src/app/categories/page.tsx
 - 各 __tests__/
 
 ## 検証結果
