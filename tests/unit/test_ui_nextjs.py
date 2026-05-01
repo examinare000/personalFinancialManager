@@ -45,12 +45,16 @@ def test_ui_packagejsonがNextjsプロジェクトとして妥当(repo_root: Pat
 
 
 def test_ui_appディレクトリにルートレイアウトとページが存在(repo_root: Path) -> None:
-    """Next.js App Router の最小構成として ``app/layout.tsx`` と ``app/page.tsx``
+    """Next.js App Router の最小構成として ``src/app/layout.tsx`` と ``src/app/page.tsx``
     が存在し、空でないこと。
+
+    ADR-014 によりサービス専有コードは ``ui/src/`` 配下に集約され、
+    App Router は ``ui/src/app/`` を起点とする。Next.js は src/app と
+    プロジェクトルート app の両方を自動検出するため設定変更は不要。
 
     Phase 0 はダッシュボードの placeholder 1 ページを返せれば DoD2 を満たす。
     """
-    app_dir = repo_root / "ui" / "app"
+    app_dir = repo_root / "ui" / "src" / "app"
     layout = app_dir / "layout.tsx"
     page = app_dir / "page.tsx"
 
