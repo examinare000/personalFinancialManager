@@ -2,7 +2,7 @@
 title: カテゴリ分類エンジン詳細設計
 version: 1.0
 status: Draft
-last_updated: 2026-04-30
+last_updated: 2026-05-01
 related_adrs:
   - ADR-008
 ---
@@ -274,5 +274,5 @@ ORDER BY 1, 2;
 - 形態素解析ライブラリの選定（janome/sudachi）は Phase 4 で確定。
 - LLM 呼び出しのレート制限・コスト上限機構（月額キャップ）は Phase 4 で実装。
 - ルール優先度の自動チューニング（よくマッチするルールを上位に）は将来検討。
-- 連動取引（カード→銀行）の `transfer` 分類は Reconciler の責務（`docs/design/06-reconciler.md`）。
+- 連動取引（カード→銀行）の `transfer` 分類は Reconciler の責務（`worker/docs/design/06-reconciler.md`）。
 - `category_confidence` の閾値（現状0.7/0.9）は実運用後にチューニング。

@@ -14,7 +14,7 @@ last_updated: 2026-04-30
 
 ADR-007（アダプタパターン）に従い、機関別取込実装の共通契約を定義する **抽象基底クラス `IngestAdapter`** を実装する。Phase 1.4 / 1.5 の MUFG / SMBC CSV アダプタ、および Phase 2 のメールパーサ・PayPal クライアントがすべて本契約を満たす。
 
-参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.3, `docs/plans/00-initial-design.md` §5.2, `docs/design/02-ingest-adapters.md`。
+参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.3, `docs/plans/00-initial-design.md` §5.2, `worker/docs/design/02-ingest-adapters.md`。
 
 ## 目的・背景
 

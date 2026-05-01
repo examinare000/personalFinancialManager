@@ -14,7 +14,7 @@ last_updated: 2026-04-30
 
 各取込アダプタが返す**正規化済みドメインオブジェクト**を `dataclass` (or pydantic) でアプリ層に定義し、Phase 1.1 で確立した DB スキーマと型レベルで対応付ける。`compute_hash(account_id, occurred_on, amount, description)` を決定的な SHA256 として実装し、ADR-006 の冪等性戦略をコードで担保する。
 
-参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.2, `docs/design/01-data-model.md`, `docs/design/02-ingest-adapters.md`。
+参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.2, `postgres/docs/design/01-data-model.md`, `worker/docs/design/02-ingest-adapters.md`。
 
 ## 目的・背景
 

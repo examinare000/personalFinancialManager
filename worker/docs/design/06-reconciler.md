@@ -2,7 +2,7 @@
 title: 連動取引・残高整合性 詳細設計
 version: 1.0
 status: Draft
-last_updated: 2026-04-30
+last_updated: 2026-05-01
 related_adrs:
   - ADR-006
 ---

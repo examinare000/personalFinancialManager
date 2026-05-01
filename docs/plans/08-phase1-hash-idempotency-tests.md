@@ -14,7 +14,7 @@ last_updated: 2026-04-30
 
 `compute_hash` の **境界条件**を property-based test（hypothesis）で網羅し、ハッシュ衝突・誤マージ・冪等性破綻を検出する。Phase1 完了条件 (b) の保険として機能し、Phase 1.6 取込CLI の冪等性を「同じファイル 2 回投入で行数増えず」よりさらに細かい粒度で保証する。
 
-参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.7, `docs/adr/006-hash-uniqueness.md`, `docs/design/01-data-model.md`。
+参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.7, `docs/adr/006-hash-uniqueness.md`, `postgres/docs/design/01-data-model.md`。
 
 ## 目的・背景
 
