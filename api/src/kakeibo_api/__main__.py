@@ -1,7 +1,7 @@
-"""``python -m kakeibo.api`` で Flask 開発サーバを起動するエントリポイント。
+"""``python -m kakeibo_api`` で Flask 開発サーバを起動するエントリポイント。
 
 Phase 0 ではこの開発サーバをそのまま Docker コンテナで動かす（スタブ）。
-Phase 3.x 以降は ``gunicorn -b 0.0.0.0:8000 'kakeibo.api:create_app()'`` で
+Phase 3.x 以降は ``gunicorn -b 0.0.0.0:8000 'kakeibo_api:create_app()'`` で
 本番起動するため、本ファイルは開発専用の互換レイヤとして残す。
 
 環境変数:
@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import os
 
-from kakeibo.api import create_app
+from kakeibo_api import create_app
 
 
 def main() -> None:

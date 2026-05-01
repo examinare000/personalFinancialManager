@@ -2,9 +2,10 @@
 
 Issue #1 DoD3「API ログにシークレット非露出」を補強するため、
 Settings インスタンスを ``repr`` した文字列に機微値が含まれないことを
-契約として固定する。``src/kakeibo/config.py:139-152`` の ``__repr__``
-実装と、``src/kakeibo/logging.py`` の redact processor が連携して
+契約として固定する。``shared/kakeibo_shared/config.py`` の ``__repr__``
+実装と、``shared/kakeibo_shared/logging.py`` の redact processor が連携して
 シークレット漏洩を防ぐ。本テストは前者の振る舞いだけを直接検証する。
+（パスは ADR-014 のサービス境界別レイアウトに準拠）
 
 設計準拠:
 - 計画レポート §5.1（write_tests 仕様）
@@ -46,7 +47,7 @@ def test_settings_reprがpasswordをマスクする(
     monkeypatch.delenv("PAYPAL_API_SECRET_FILE", raising=False)
     monkeypatch.delenv("GMAIL_OAUTH_TOKEN_FILE", raising=False)
 
-    from kakeibo.config import Settings
+    from kakeibo_shared.config import Settings
 
     settings = Settings()  # pyright: ignore[reportCallIssue]
 
@@ -83,7 +84,7 @@ def test_settings_reprが非機密フィールドはマスクしない(
     monkeypatch.delenv("PAYPAL_API_SECRET_FILE", raising=False)
     monkeypatch.delenv("GMAIL_OAUTH_TOKEN_FILE", raising=False)
 
-    from kakeibo.config import Settings
+    from kakeibo_shared.config import Settings
 
     settings = Settings()  # pyright: ignore[reportCallIssue]
     rendered = repr(settings)

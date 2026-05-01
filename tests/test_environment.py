@@ -47,17 +47,18 @@ def test_pyprojectが妥当なTOMLでパースできる(repo_root: Path) -> None
     )
 
 
-def test_kakeiboパッケージがimportできる() -> None:
-    """src/kakeibo がパッケージとして import 可能で、バージョン文字列を持つこと。
+def test_kakeibo_sharedパッケージがimportできる() -> None:
+    """``shared/kakeibo_shared`` がパッケージとして import 可能で、バージョン文字列を持つこと。
 
-    最小骨格でも __version__ を公開する慣習に従い、公開 API の起点を
-    明示的に確認する。
+    ADR-014 によりコードはサービス境界へ分離され、共有モジュールは
+    ``kakeibo_shared`` 名前空間に集約された。最小骨格でも __version__ を
+    公開する慣習に従い、公開 API の起点を明示的に確認する。
     """
-    import kakeibo
+    import kakeibo_shared
 
-    assert hasattr(kakeibo, "__version__")
-    assert isinstance(kakeibo.__version__, str)
-    assert kakeibo.__version__  # 空文字でない
+    assert hasattr(kakeibo_shared, "__version__")
+    assert isinstance(kakeibo_shared.__version__, str)
+    assert kakeibo_shared.__version__  # 空文字でない
 
 
 def test_設定クラスが環境変数からDATABASE_URLを読める(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -72,7 +73,7 @@ def test_設定クラスが環境変数からDATABASE_URLを読める(monkeypatc
     monkeypatch.delenv("PG_PASSWORD_FILE", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY_FILE", raising=False)
 
-    from kakeibo.config import Settings
+    from kakeibo_shared.config import Settings
 
     # pydantic-settings は環境変数からフィールドを充填するため、
     # 引数なし生成は意図された使い方だが pyright は Field(...) を必須と判断する。
@@ -94,7 +95,7 @@ def test_DocSecretのFILE規約で値を取得できる(
     monkeypatch.setenv("DATABASE_URL", "postgresql://x@y:5432/z")
     monkeypatch.setenv("PG_PASSWORD_FILE", str(secret_file))
 
-    from kakeibo.config import Settings
+    from kakeibo_shared.config import Settings
 
     settings = Settings()  # pyright: ignore[reportCallIssue]
     # ファイル末尾の改行は除去される（trim）
@@ -108,7 +109,7 @@ def test_logging設定でpasswordキーが自動マスクされる() -> None:
     password / token / secret / key / authorization を含むキーは
     値に関わらずログ出力前にマスクされる必要がある。
     """
-    from kakeibo.logging import redact_sensitive_processor
+    from kakeibo_shared.logging import redact_sensitive_processor
 
     event_dict = {
         "event": "ログイン試行",
@@ -272,14 +273,14 @@ def test_gitignoreがsecretsとenvを除外する(repo_root: Path) -> None:
 
 
 def test_api_create_appが200でhealthを返す() -> None:
-    """``kakeibo.api.create_app()`` が Flask アプリを返し、``GET /health`` が
+    """``kakeibo_api.create_app()`` が Flask アプリを返し、``GET /health`` が
     ``{"status": "ok"}`` を 200 で応答すること。
 
     ヘルスチェックは Docker / Caddy / 監視系すべての疎通基盤になるため、
     レスポンス形式（status キーが ok）と HTTP ステータス（200）を契約として
     固定する。互換性破壊が発生したらここで早期検出する。
     """
-    from kakeibo.api import create_app
+    from kakeibo_api import create_app
 
     app = create_app()
     client = app.test_client()
@@ -292,7 +293,7 @@ def test_api_create_appが200でhealthを返す() -> None:
 
 
 def test_worker_runが短時間でheartbeatを書き込む(tmp_path: Path) -> None:
-    """``kakeibo.worker.run()`` が短時間で heartbeat ファイルを生成すること。
+    """``kakeibo_worker.run()`` が短時間で heartbeat ファイルを生成すること。
 
     Docker の HEALTHCHECK は heartbeat ファイルの mtime で生存判定するため、
     起動直後に最低 1 回 heartbeat が書かれることを契約として固定する。
@@ -303,7 +304,7 @@ def test_worker_runが短時間でheartbeatを書き込む(tmp_path: Path) -> No
     """
     import threading
 
-    from kakeibo.worker import run
+    from kakeibo_worker import run
 
     heartbeat_path = tmp_path / "worker_heartbeat"
     stop_event = threading.Event()

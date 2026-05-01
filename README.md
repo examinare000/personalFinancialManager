@@ -96,11 +96,17 @@ docker compose down
 
 | パス | 役割 |
 |---|---|
-| `src/kakeibo/` | コア実装（domain / adapters / ingest / worker / db / config） |
-| `api/`, `worker/` | コンテナ build context（実体は `src/kakeibo/` を import） |
+| `shared/kakeibo_shared/` | サービス横断の共有コード（config / logging / db / domain） |
+| `api/src/kakeibo_api/` | Flask API サービス専有コード |
+| `api/Dockerfile` | api コンテナのビルド定義 |
+| `worker/src/kakeibo_worker/` | バッチ worker サービス専有コード（ingest / adapters 等） |
+| `worker/Dockerfile` | worker コンテナのビルド定義 |
 | `postgres/src/alembic/` | DB マイグレーション（postgres サービス所有、worker からマウント実行） |
 | `postgres/src/sql/queries/` | 共通 SQL クエリ（postgres サービス所有） |
-| `tests/` | pytest テスト（Phase 0 では `test_environment.py` のみ） |
-| `docs/` | 設計書・ADR・開発プラン |
+| `postgres/src/alembic.ini` | alembic 設定 |
+| `ui/` | Next.js ダッシュボード（Phase 3 以降で UI 本実装） |
+| `caddy/` | リバースプロキシ設定・Caddy 永続ボリューム |
+| `tests/` | サービス横断テスト（環境契約テスト等） |
+| `docs/` | 横断設計書・ADR・横断プラン |
 | `secrets/` | Docker secret 用ファイル雛形（実体は git 追跡対象外） |
 | `inbox/`, `archive/`, `dead_letter/`, `backup/`, `data/` | 取込・保管ディレクトリ（実体は git 追跡対象外） |

@@ -2,13 +2,16 @@
 #
 # 設計指針:
 # - build context はリポジトリルート（compose.yml の context: . を参照）
+#   ADR-014 により共有コードは ``shared/`` 配下にあるため、build context は
+#   引き続きルートを採用し ``shared/`` と ``api/src/`` の両者を COPY する。
 # - uv をベースイメージに導入し、pyproject.toml + uv.lock から依存をインストール
 # - マルチステージで本番イメージから build 用ツールを排除
 # - 非 root ユーザで実行（agent-rules/70-docker-environments.md）
 #
 # 実装メモ:
-# - api/kakeibo_api/ は将来 Flask app の thin wrapper を置く
-# - ビジネスロジック本体は src/kakeibo/ から import する
+# - サービス専有コード: ``api/src/kakeibo_api/`` （Flask アプリ本体）
+# - 共有コード: ``shared/kakeibo_shared/`` （config / logging / db / domain）
+# - 開発時は compose.override.yml が ``./api/src`` ``./shared`` を bind mount する
 
 # ── builder stage ──
 FROM python:3.12-slim AS builder
@@ -34,8 +37,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # アプリ本体を COPY して editable インストール。
 # README.md は pyproject.toml の readme フィールドが参照するため必須。
-COPY src /app/src
-COPY api /app/api
+# api/src は kakeibo_api パッケージ、shared は kakeibo_shared パッケージ。
+COPY api/src /app/src
+COPY shared /app/shared
 COPY README.md /app/README.md
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen
@@ -61,11 +65,11 @@ USER kakeibo
 
 EXPOSE 8000
 
-# Phase 0 では Werkzeug 開発サーバ（kakeibo.api.__main__）で起動する。
+# Phase 0 では Werkzeug 開発サーバ（kakeibo_api.__main__）で起動する。
 # Phase 3.x で gunicorn / uvicorn に切替える際は本 CMD のみ更新する。
 # - 0.0.0.0 バインドは external ネットワーク内（ui/caddy）からの接続用。
 # - host バインドは compose.override.yml で 127.0.0.1 に絞る。
-CMD ["python", "-m", "kakeibo.api"]
+CMD ["python", "-m", "kakeibo_api"]
 
 # python:3.12-slim には curl/wget が無いため、urllib で /health を叩く。
 # 200 以外でステータス 1 を返し、HEALTHCHECK を失敗扱いにする。

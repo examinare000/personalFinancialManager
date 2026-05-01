@@ -1,8 +1,11 @@
 """開発用 ``compose.override.yml`` の bind mount 検証テスト。
 
-Issue #1 DoD5「``src/kakeibo`` の変更がコンテナに反映」を満たすため、
-開発時に host ``./src`` を api / worker コンテナの ``/app/src`` に bind mount
-することを契約として固定する。
+Issue #1 DoD5「ホスト側のコード変更がコンテナに反映」を満たすため、
+開発時に api / worker のコンテナ ``/app/src`` および ``/app/shared`` に
+ホスト側ソースツリーが bind mount されることを契約として固定する。
+
+ADR-014 によりサービス専有コードは ``<service>/src`` 配下、共有コードは
+``shared/`` 配下に分離されたため、それぞれを別マウントとして検証する。
 
 設計準拠:
 - 計画レポート §4.2 / §5.1（write_tests 仕様）
@@ -63,32 +66,41 @@ def _compose_config(
     return result.stdout
 
 
-def test_compose_overrideがapiにsrcをbind_mount(repo_root: Path) -> None:
-    """開発 override マージ後の ``api`` サービス定義に、host ``./src`` →
-    コンテナ ``/app/src`` の bind mount が存在すること。
+def test_compose_overrideがapiにsrcとsharedをbind_mount(repo_root: Path) -> None:
+    """開発 override マージ後の ``api`` サービス定義に、host ``./api/src`` →
+    コンテナ ``/app/src`` および host ``./shared`` → コンテナ ``/app/shared``
+    の bind mount が両方存在すること。
 
     docker compose config の出力では bind mount が
-    ``- /abs/path/to/src:/app/src`` あるいは ``type: bind`` 形式で展開される
-    ため、いずれの表現でも検出できるよう ``/app/src`` をマーカーに使う。
+    ``- /abs/path/to/api/src:/app/src`` あるいは ``type: bind`` 形式で展開される
+    ため、いずれの表現でも検出できるよう ``/app/src`` と ``/app/shared``
+    をマーカーに使う。
     """
     config_text = _compose_config(repo_root)
     api_block = extract_service_block(config_text, "api")
     assert api_block is not None, "merged compose 設定に api サービスが存在しません"
 
-    # short-form `host:/app/src` または long-form `target: /app/src` のいずれでも合格させる。
     assert "/app/src" in api_block, (
         "api サービスに /app/src への bind mount が必要です（dev での hot reload 用）"
     )
-    # source 側がリポジトリの src ディレクトリであることも併せて確認する。
-    src_abs = str((repo_root / "src").resolve())
-    assert src_abs in api_block or "./src" in api_block, (
-        f"api サービスの bind mount source は {src_abs} もしくは ./src である必要があります"
+    assert "/app/shared" in api_block, (
+        "api サービスに /app/shared への bind mount が必要です"
+        "（ADR-014: 共有コードは shared/ をマウント）"
+    )
+    api_src_abs = str((repo_root / "api" / "src").resolve())
+    shared_abs = str((repo_root / "shared").resolve())
+    assert api_src_abs in api_block or "./api/src" in api_block, (
+        f"api サービスの bind mount source は {api_src_abs} もしくは ./api/src である必要があります"
+    )
+    assert shared_abs in api_block or "./shared" in api_block, (
+        f"api サービスの shared bind mount source は {shared_abs} もしくは ./shared である必要があります"
     )
 
 
-def test_compose_overrideがworkerにsrcをbind_mount(repo_root: Path) -> None:
-    """開発 override マージ後の ``worker`` サービス定義に、host ``./src`` →
-    コンテナ ``/app/src`` の bind mount が存在すること。
+def test_compose_overrideがworkerにsrcとsharedをbind_mount(repo_root: Path) -> None:
+    """開発 override マージ後の ``worker`` サービス定義に、host ``./worker/src`` →
+    コンテナ ``/app/src`` および host ``./shared`` → コンテナ ``/app/shared``
+    の bind mount が両方存在すること。
 
     worker は ``profiles: [worker]`` を持つため、``--profile worker`` で
     activated 状態にしてから config を取得する。
@@ -100,7 +112,15 @@ def test_compose_overrideがworkerにsrcをbind_mount(repo_root: Path) -> None:
     assert "/app/src" in worker_block, (
         "worker サービスに /app/src への bind mount が必要です（dev での hot reload 用）"
     )
-    src_abs = str((repo_root / "src").resolve())
-    assert src_abs in worker_block or "./src" in worker_block, (
-        f"worker サービスの bind mount source は {src_abs} もしくは ./src である必要があります"
+    assert "/app/shared" in worker_block, (
+        "worker サービスに /app/shared への bind mount が必要です"
+        "（ADR-014: 共有コードは shared/ をマウント）"
+    )
+    worker_src_abs = str((repo_root / "worker" / "src").resolve())
+    shared_abs = str((repo_root / "shared").resolve())
+    assert worker_src_abs in worker_block or "./worker/src" in worker_block, (
+        f"worker サービスの bind mount source は {worker_src_abs} もしくは ./worker/src である必要があります"
+    )
+    assert shared_abs in worker_block or "./shared" in worker_block, (
+        f"worker サービスの shared bind mount source は {shared_abs} もしくは ./shared である必要があります"
     )

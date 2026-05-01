@@ -22,7 +22,7 @@ from types import FrameType
 
 import structlog
 
-from kakeibo.logging import configure_logging
+from kakeibo_shared.logging import configure_logging
 
 _DEFAULT_HEARTBEAT_PATH = Path("/tmp/worker_heartbeat")
 _DEFAULT_INTERVAL_SECONDS = 60.0

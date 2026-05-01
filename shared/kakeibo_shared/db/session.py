@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from sqlalchemy.engine import Engine
     from sqlalchemy.orm import Session
 
-    from kakeibo.config import Settings
+    from kakeibo_shared.config import Settings
 
 
 def create_db_engine(settings: Settings) -> Engine:

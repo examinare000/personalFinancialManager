@@ -1,11 +1,11 @@
-"""``python -m kakeibo.worker`` で worker 常駐プロセスを起動する。
+"""``python -m kakeibo_worker`` で worker 常駐プロセスを起動する。
 
 Docker コンテナの ``CMD`` から呼ばれることを想定している。
 """
 
 from __future__ import annotations
 
-from kakeibo.worker import run
+from kakeibo_worker import run
 
 
 def main() -> None:

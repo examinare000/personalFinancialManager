@@ -4,6 +4,8 @@
 # - api と同じ uv ベースのマルチステージ
 # - メール / PDF パース extras を含める
 # - 監視・バッチ用ツール（cron / tini 等）は将来必要になり次第追加
+# - ADR-014: build context はリポジトリルートを採用し、サービス専有コード
+#   ``worker/src`` と共有コード ``shared/`` の双方を COPY する
 
 # ── builder stage ──
 FROM python:3.12-slim AS builder
@@ -27,8 +29,8 @@ COPY pyproject.toml uv.lock /app/
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --extra mail --extra pdf --extra llm
 
-COPY src /app/src
-COPY worker /app/worker
+COPY worker/src /app/src
+COPY shared /app/shared
 # README.md は pyproject.toml の readme フィールドが参照するため必須。
 COPY README.md /app/README.md
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -62,7 +64,7 @@ ENV WORKER_HEARTBEAT_PATH=/tmp/worker_heartbeat
 
 # Phase 0 では heartbeat を更新するだけの idle ループを回す。
 # Phase 2.x で取込ジョブのスケジューラに置換する。
-CMD ["python", "-m", "kakeibo.worker"]
+CMD ["python", "-m", "kakeibo_worker"]
 
 # heartbeat ファイルの mtime が 120 秒以内であれば healthy 判定。
 # busybox の stat は -c フォーマット指定がないため Python で実装する。

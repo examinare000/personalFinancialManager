@@ -79,18 +79,26 @@ llm = [
 
 [project.scripts]
 # Phase 1.6 で取込 CLI を提供する想定のエントリポイント。
-# 実体は後続コミットで src/kakeibo/__main__.py か CLI モジュールへ接続する。
-kakeibo = "kakeibo.__main__:main"
+# ADR-014 によりサービス専有の CLI は worker パッケージへ移管する。
+kakeibo-worker = "kakeibo_worker.__main__:main"
+kakeibo-api = "kakeibo_api.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/examinare000/personalFinancialManager"
 Repository = "https://github.com/examinare000/personalFinancialManager"
 
 # ──────────────────────────────────────────────────────────────────
-# hatchling 設定: src レイアウトを明示する
+# hatchling 設定: ADR-014 のサービス境界別レイアウトを明示する
+# - shared/kakeibo_shared: 共有コード（複数サービスから読まれる）
+# - api/src/kakeibo_api:   Flask API サービス専有
+# - worker/src/kakeibo_worker: バッチ worker サービス専有
 # ──────────────────────────────────────────────────────────────────
 [tool.hatch.build.targets.wheel]
-packages = ["src/kakeibo"]
+packages = [
+    "shared/kakeibo_shared",
+    "api/src/kakeibo_api",
+    "worker/src/kakeibo_worker",
+]
 
 # ──────────────────────────────────────────────────────────────────
 # pytest 設定
@@ -116,7 +124,8 @@ filterwarnings = [
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-src = ["src", "tests"]
+# ADR-014: 各サービスの src と shared を ruff の検査対象として登録する。
+src = ["shared", "api/src", "worker/src", "tests"]
 
 [tool.ruff.lint]
 # agressive な選択。後続フェーズで違反が頻発するルールは個別に
@@ -160,7 +169,7 @@ line-ending = "lf"
 # pyright 設定（strict）
 # ──────────────────────────────────────────────────────────────────
 [tool.pyright]
-include = ["src", "tests", "postgres/src/alembic"]
+include = ["shared", "api/src", "worker/src", "tests", "postgres/src/alembic"]
 exclude = [
     "**/__pycache__",
     "**/.venv",
@@ -180,7 +189,8 @@ reportImplicitOverride = "none"
 # ──────────────────────────────────────────────────────────────────
 [tool.coverage.run]
 branch = true
-source = ["kakeibo"]
+# ADR-014 でパッケージ名が分割されたため、カバレッジ計測も全 3 パッケージを対象とする。
+source = ["kakeibo_shared", "kakeibo_api", "kakeibo_worker"]
 
 [tool.coverage.report]
 exclude_lines = [
