@@ -23,9 +23,11 @@ COPY ui/package.json ui/package-lock.json /app/
 
 RUN npm ci
 
-# アプリ本体（app ディレクトリと next 設定）を COPY して build 実行。
+# アプリ本体（src ディレクトリと next 設定）を COPY して build 実行。
+# ADR-014: App Router のソースは ``ui/src/app`` 配下に配置する。
+# Next.js は src/app と app の両方を自動検出するため設定変更は不要。
 COPY ui/next.config.mjs ui/tsconfig.json /app/
-COPY ui/app /app/app
+COPY ui/src /app/src
 
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build

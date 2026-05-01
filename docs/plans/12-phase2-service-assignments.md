@@ -35,7 +35,7 @@ last_updated: 2026-05-01
 | `api` | – | – | – | – | – | – | – | – | 0 |
 | `ui` | – | – | – | – | – | – | – | – | 0 |
 
-Phase2 は **すべて `worker` サービスに集約** される。Phase1 で作った取込CLI（`src/kakeibo/ingest/cli.py`）と共通アダプタ（`src/kakeibo/adapters/`）の上に、watchdog / メールパーサ / 外部 API クライアント / cron スケジューラを積み上げる構造。
+Phase2 は **すべて `worker` サービスに集約** される。Phase1 で作った取込CLI（`worker/src/kakeibo_worker/ingest/cli.py`）と共通アダプタ（`worker/src/kakeibo_worker/adapters/`）の上に、watchdog / メールパーサ / 外部 API クライアント / cron スケジューラを積み上げる構造。
 
 `compose.yml` の `worker` サービス（`worker/Dockerfile`）の改修は 2.8 cron バッチ運用化で発生する。`postgres` のスキーマは Phase1 で確定済みで Phase2 では変更しない（メール取引・PayPal 取引も `transactions` テーブルに正規化済みの形で投入）。
 
@@ -73,7 +73,7 @@ Phase2 の **原典は `docs/plans/01-development-plan.md` §4.2** のみ（Phas
 | inbox / archive / dead_letter ディレクトリ | `./{inbox,archive,dead_letter}/.gitkeep` | Watcher / Archiver の I/O ボリューム |
 | secrets ディレクトリ | `./secrets/{gmail_oauth_token.json,paypal_api_secret.txt,...}` | Docker secret の供給元（`.example` も配置済み） |
 | `compose.yml` `worker` サービス | volume マウント / 環境変数（`INBOX_PATH`, `GMAIL_OAUTH_TOKEN_FILE`, `PAYPAL_API_SECRET_FILE`）すでに宣言済 | – |
-| Settings ローダー | `src/kakeibo/config.py` `gmail_oauth_token_path`, `paypal_api_secret` フィールド済み | Phase 2.3 / 2.7 で参照 |
+| Settings ローダー | `shared/kakeibo_shared/config.py` `gmail_oauth_token_path`, `paypal_api_secret` フィールド済み | Phase 2.3 / 2.7 で参照 |
 | 依存宣言 | `pyproject.toml` `[project.optional-dependencies].mail` に `mail-parser`, `beautifulsoup4`, `lxml` | Phase 2.4〜2.6 で有効化 |
 | `worker/Dockerfile` | 既に `--extra mail --extra pdf --extra llm` でビルド済 | Phase 2.x で追加 build 不要 |
 
@@ -81,12 +81,12 @@ Phase2 の **原典は `docs/plans/01-development-plan.md` §4.2** のみ（Phas
 
 | 領域 | パス | 帰属タスク |
 |---|---|---|
-| watchdog Watcher 本体 | `src/kakeibo/ingest/watcher.py`（未作成） | `worker/Ph2/01` |
-| アーカイブ / dead letter ロジック | `src/kakeibo/ingest/archiver.py`（未作成） | `worker/Ph2/02` |
-| Gmail MCP クライアント | `src/kakeibo/adapters/gmail/`（未作成） + `RawMail` ドメイン型 | `worker/Ph2/03` |
-| メールパーサ群（Amazon / 楽天 / Yahoo） | `src/kakeibo/adapters/mail/{amazon,rakuten,yahoo}.py` | `worker/Ph2/04〜06` |
-| PayPal API クライアント | `src/kakeibo/adapters/paypal.py` | `worker/Ph2/07` |
-| cron バッチランナー | `src/kakeibo/worker/scheduler.py` + `worker/Dockerfile` 改修 | `worker/Ph2/08` |
+| watchdog Watcher 本体 | `worker/src/kakeibo_worker/ingest/watcher.py`（未作成） | `worker/Ph2/01` |
+| アーカイブ / dead letter ロジック | `worker/src/kakeibo_worker/ingest/archiver.py`（未作成） | `worker/Ph2/02` |
+| Gmail MCP クライアント | `worker/src/kakeibo_worker/adapters/gmail/`（未作成） + `RawMail` ドメイン型 | `worker/Ph2/03` |
+| メールパーサ群（Amazon / 楽天 / Yahoo） | `worker/src/kakeibo_worker/adapters/mail/{amazon,rakuten,yahoo}.py` | `worker/Ph2/04〜06` |
+| PayPal API クライアント | `worker/src/kakeibo_worker/adapters/paypal.py` | `worker/Ph2/07` |
+| cron バッチランナー | `worker/src/kakeibo_worker/scheduler.py` + `worker/Dockerfile` 改修 | `worker/Ph2/08` |
 
 ### Phase2 の前提（Phase1 完了が必要）
 

@@ -34,8 +34,8 @@ dead_letter/
 dead_letter/**
 backup/
 backup/**
-caddy_data/
-caddy_config/
+caddy/data/
+caddy/config/
 !inbox/.gitkeep
 !archive/.gitkeep
 !dead_letter/.gitkeep

@@ -20,9 +20,9 @@ last_updated: 2026-04-30
 
 | ID | 条件 | 担当タスク（プランファイル） |
 |---|---|---|
-| (a) | `alembic upgrade head` が冪等に実行できる | `02-phase1-db-schema-and-migrations.md` |
-| (b) | 同一 CSV を 2 回投入しても `transactions` 行数が増えない | `07-phase1-ingest-cli.md` + `08-phase1-hash-idempotency-tests.md` |
-| (c) | サンプル CSV から月次合計を集計する SQL が手計算結果と一致する | `09-phase1-monthly-summary-sql.md` |
+| (a) | `alembic upgrade head` が冪等に実行できる | `postgres/docs/plans/Ph1/02-db-schema-and-migrations.md` |
+| (b) | 同一 CSV を 2 回投入しても `transactions` 行数が増えない | `worker/docs/plans/Ph1/07-ingest-cli.md` + `worker/docs/plans/Ph1/08-hash-idempotency-tests.md` |
+| (c) | サンプル CSV から月次合計を集計する SQL が手計算結果と一致する | `postgres/docs/plans/Ph1/09-monthly-summary-sql.md` |
 | (d) | 全ユニットテストが緑、`pyright` クリーン | 全プラン横断（各プランの「テスト計画」「受入条件」に明記） |
 
 ### 関連設計資産
@@ -34,14 +34,14 @@ last_updated: 2026-04-30
 
 | 連番 | タスクID | タイトル | プランファイル | ブランチ名 | 依存タスク | 優先度 |
 |---|---|---|---|---|---|---|
-| 02 | 1.1 | DBスキーマ・マイグレーション基盤 | `02-phase1-db-schema-and-migrations.md` | `feature/db-schema-initial` | なし | 高 |
-| 03 | 1.2 | 共通型（Transaction / Holding / BalanceSnapshot） | `03-phase1-domain-types.md` | `feature/domain-types` | `02-phase1-db-schema-and-migrations.md` | 高 |
-| 04 | 1.3 | IngestAdapter ABC | `04-phase1-ingest-adapter-base.md` | `feature/ingest-adapter-base` | `03-phase1-domain-types.md` | 高 |
-| 05 | 1.4 | MUFG CSV アダプタ | `05-phase1-mufg-csv-adapter.md` | `feature/adapter-mufg-csv` | `04-phase1-ingest-adapter-base.md` | 中 |
-| 06 | 1.5 | SMBC CSV アダプタ | `06-phase1-smbc-csv-adapter.md` | `feature/adapter-smbc-csv` | `04-phase1-ingest-adapter-base.md` | 中 |
-| 07 | 1.6 | 取込CLI | `07-phase1-ingest-cli.md` | `feature/ingest-cli` | `05-phase1-mufg-csv-adapter.md`, `06-phase1-smbc-csv-adapter.md` | 高 |
-| 08 | 1.7 | ハッシュ冪等性ユニットテスト強化 | `08-phase1-hash-idempotency-tests.md` | `feature/hash-idempotency-tests` | `03-phase1-domain-types.md`, `07-phase1-ingest-cli.md` | 中 |
-| 09 | 1.8 | 月次サマリ SQL | `09-phase1-monthly-summary-sql.md` | `feature/monthly-summary-sql` | `07-phase1-ingest-cli.md` | 中 |
+| 02 | 1.1 | DBスキーマ・マイグレーション基盤 | `postgres/docs/plans/Ph1/02-db-schema-and-migrations.md` | `feature/db-schema-initial` | なし | 高 |
+| 03 | 1.2 | 共通型（Transaction / Holding / BalanceSnapshot） | `postgres/docs/plans/Ph1/03-domain-types.md` | `feature/domain-types` | `postgres/docs/plans/Ph1/02-db-schema-and-migrations.md` | 高 |
+| 04 | 1.3 | IngestAdapter ABC | `worker/docs/plans/Ph1/04-ingest-adapter-base.md` | `feature/ingest-adapter-base` | `postgres/docs/plans/Ph1/03-domain-types.md` | 高 |
+| 05 | 1.4 | MUFG CSV アダプタ | `worker/docs/plans/Ph1/05-mufg-csv-adapter.md` | `feature/adapter-mufg-csv` | `worker/docs/plans/Ph1/04-ingest-adapter-base.md` | 中 |
+| 06 | 1.5 | SMBC CSV アダプタ | `worker/docs/plans/Ph1/06-smbc-csv-adapter.md` | `feature/adapter-smbc-csv` | `worker/docs/plans/Ph1/04-ingest-adapter-base.md` | 中 |
+| 07 | 1.6 | 取込CLI | `worker/docs/plans/Ph1/07-ingest-cli.md` | `feature/ingest-cli` | `worker/docs/plans/Ph1/05-mufg-csv-adapter.md`, `worker/docs/plans/Ph1/06-smbc-csv-adapter.md` | 高 |
+| 08 | 1.7 | ハッシュ冪等性ユニットテスト強化 | `worker/docs/plans/Ph1/08-hash-idempotency-tests.md` | `feature/hash-idempotency-tests` | `postgres/docs/plans/Ph1/03-domain-types.md`, `worker/docs/plans/Ph1/07-ingest-cli.md` | 中 |
+| 09 | 1.8 | 月次サマリ SQL | `postgres/docs/plans/Ph1/09-monthly-summary-sql.md` | `feature/monthly-summary-sql` | `worker/docs/plans/Ph1/07-ingest-cli.md` | 中 |
 
 ### 優先度の付与基準
 
@@ -55,22 +55,22 @@ last_updated: 2026-04-30
 
 ### 直列の上流（1 → 2 → 3 の順で完了させる）
 
-1. `02-phase1-db-schema-and-migrations.md`（DBスキーマ）
-2. `03-phase1-domain-types.md`（共通型）
-3. `04-phase1-ingest-adapter-base.md`（IngestAdapter ABC）
+1. `postgres/docs/plans/Ph1/02-db-schema-and-migrations.md`（DBスキーマ）
+2. `postgres/docs/plans/Ph1/03-domain-types.md`（共通型）
+3. `worker/docs/plans/Ph1/04-ingest-adapter-base.md`（IngestAdapter ABC）
 
 ### 並行可能なアダプタ層
 
-4a. `05-phase1-mufg-csv-adapter.md`（MUFG）
-4b. `06-phase1-smbc-csv-adapter.md`（SMBC）
+4a. `worker/docs/plans/Ph1/05-mufg-csv-adapter.md`（MUFG）
+4b. `worker/docs/plans/Ph1/06-smbc-csv-adapter.md`（SMBC）
 
 両方の完了を待ってから次へ進む。
 
 ### 統合と検証
 
-5. `07-phase1-ingest-cli.md`（取込CLI、4a / 4b の合流点）
-6a. `08-phase1-hash-idempotency-tests.md`（ハッシュ冪等性）
-6b. `09-phase1-monthly-summary-sql.md`（月次サマリ SQL）
+5. `worker/docs/plans/Ph1/07-ingest-cli.md`（取込CLI、4a / 4b の合流点）
+6a. `worker/docs/plans/Ph1/08-hash-idempotency-tests.md`（ハッシュ冪等性）
+6b. `postgres/docs/plans/Ph1/09-monthly-summary-sql.md`（月次サマリ SQL）
 
 6a と 6b は CLI 完了後に並行可能。両方完了で Phase1 完了条件 (a)〜(d) が揃う。
 
@@ -119,9 +119,9 @@ flowchart TD
 
 | 完了条件 | 主担当プラン | 補強プラン |
 |---|---|---|
-| (a) `alembic upgrade head` 冪等 | `02-phase1-db-schema-and-migrations.md` | – |
-| (b) 同一 CSV 2 回投入で行数増えず | `07-phase1-ingest-cli.md` | `08-phase1-hash-idempotency-tests.md` |
-| (c) 月次サマリ SQL が手計算と一致 | `09-phase1-monthly-summary-sql.md` | `07-phase1-ingest-cli.md`（投入元） |
+| (a) `alembic upgrade head` 冪等 | `postgres/docs/plans/Ph1/02-db-schema-and-migrations.md` | – |
+| (b) 同一 CSV 2 回投入で行数増えず | `worker/docs/plans/Ph1/07-ingest-cli.md` | `worker/docs/plans/Ph1/08-hash-idempotency-tests.md` |
+| (c) 月次サマリ SQL が手計算と一致 | `postgres/docs/plans/Ph1/09-monthly-summary-sql.md` | `worker/docs/plans/Ph1/07-ingest-cli.md`（投入元） |
 | (d) 全ユニットテスト緑 / pyright クリーン | 全プラン横断 | – |
 
 ## 6. 品質ゲート
@@ -135,14 +135,14 @@ flowchart TD
 
 ## 7. プランファイル一覧（参照用）
 
-- `02-phase1-db-schema-and-migrations.md`
-- `03-phase1-domain-types.md`
-- `04-phase1-ingest-adapter-base.md`
-- `05-phase1-mufg-csv-adapter.md`
-- `06-phase1-smbc-csv-adapter.md`
-- `07-phase1-ingest-cli.md`
-- `08-phase1-hash-idempotency-tests.md`
-- `09-phase1-monthly-summary-sql.md`
+- `postgres/docs/plans/Ph1/02-db-schema-and-migrations.md`
+- `postgres/docs/plans/Ph1/03-domain-types.md`
+- `worker/docs/plans/Ph1/04-ingest-adapter-base.md`
+- `worker/docs/plans/Ph1/05-mufg-csv-adapter.md`
+- `worker/docs/plans/Ph1/06-smbc-csv-adapter.md`
+- `worker/docs/plans/Ph1/07-ingest-cli.md`
+- `worker/docs/plans/Ph1/08-hash-idempotency-tests.md`
+- `postgres/docs/plans/Ph1/09-monthly-summary-sql.md`
 
 ## 8. Phase1 完了後の次ステップ
 

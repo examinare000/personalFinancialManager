@@ -75,25 +75,25 @@ Phase 3 でも **原典は `docs/plans/01-development-plan.md` §4.3 のみ**（
 
 | 資産 | パス | 用途 |
 |---|---|---|
-| Flask アプリファクトリ | `src/kakeibo/api/app.py`（`/health` のみ） | Phase 3.1 で Blueprint を追加する起点 |
+| Flask アプリファクトリ | `api/src/kakeibo_api/app.py`（`/health` のみ） | Phase 3.1 で Blueprint を追加する起点 |
 | api Dockerfile | `api/Dockerfile`（uv マルチステージ、非 root） | Phase 3.1 でも変更不要 |
-| Next.js 14 App Router 雛形 | `ui/app/{layout,page}.tsx`、`ui/Dockerfile`（standalone build） | Phase 3.2 で拡張 |
-| 設定ローダー | `src/kakeibo/config.py` | 認証バイパスフラグ追加先 |
+| Next.js 14 App Router 雛形 | `ui/src/app/{layout,page}.tsx`、`ui/Dockerfile`（standalone build） | Phase 3.2 で拡張 |
+| 設定ローダー | `shared/kakeibo_shared/config.py` | 認証バイパスフラグ追加先 |
 | Flask / pydantic v2 依存 | `pyproject.toml` `[project.dependencies]` | 既宣言 |
 
 ### 未着手（Phase3 で実装）
 
 | 領域 | パス | 帰属タスク |
 |---|---|---|
-| REST CRUD Blueprint 群 | `src/kakeibo/api/blueprints/` | `api/Ph3/01` |
-| pydantic スキーマ | `src/kakeibo/api/schemas/` | `api/Ph3/01` |
-| Tailscale ヘッダ認証 | `src/kakeibo/api/auth.py` | `api/Ph3/01` |
-| OpenAPI 自動生成 | `src/kakeibo/api/openapi.py` | `api/Ph3/01` |
-| リポジトリ層 | `src/kakeibo/db/repositories/` | `api/Ph3/01` |
-| 集計 SQL + API | `sql/queries/{monthly_balance_trend,category_spending,portfolio_composition}.sql`, `src/kakeibo/api/blueprints/aggregations.py` | `api/Ph3/02` |
-| ルール dry-run + Categorizer | `src/kakeibo/categorizer/`, `src/kakeibo/api/blueprints/rules.py` 拡張 | `api/Ph3/03` |
+| REST CRUD Blueprint 群 | `api/src/kakeibo_api/blueprints/` | `api/Ph3/01` |
+| pydantic スキーマ | `api/src/kakeibo_api/schemas/` | `api/Ph3/01` |
+| Tailscale ヘッダ認証 | `api/src/kakeibo_api/auth.py` | `api/Ph3/01` |
+| OpenAPI 自動生成 | `api/src/kakeibo_api/openapi.py` | `api/Ph3/01` |
+| リポジトリ層 | `shared/kakeibo_shared/db/repositories/` | `api/Ph3/01` |
+| 集計 SQL + API | `postgres/src/sql/queries/{monthly_balance_trend,category_spending,portfolio_composition}.sql`, `api/src/kakeibo_api/blueprints/aggregations.py` | `api/Ph3/02` |
+| ルール dry-run + Categorizer | `worker/src/kakeibo_worker/categorizer/`, `api/src/kakeibo_api/blueprints/rules.py` 拡張 | `api/Ph3/03` |
 | UI ライブラリ・コンポーネント | `ui/lib/`, `ui/components/`, `ui/styles/` | `ui/Ph3/01` |
-| 各ページ | `ui/app/{balances,categories,portfolio,rules}/` | `ui/Ph3/02〜05` |
+| 各ページ | `ui/src/app/{balances,categories,portfolio,rules}/` | `ui/Ph3/02〜05` |
 | Playwright e2e | `tests/e2e/` | `ui/Ph3/06` |
 
 ### Phase3 の前提（Phase 1 / Phase 2 完了が必要）

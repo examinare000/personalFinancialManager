@@ -37,6 +37,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      # ADR-014: 共有コード shared/ を両コンテナに read-only マウントする規約。
+      # Dockerfile でも COPY して image に焼き込むが、ランタイムマウントによる
+      # 開発／本番の構成乖離防止と、本番では image 内の COPY 済みコードに対する
+      # 上書き読込（同パス）を許容する設計。
+      - ./shared:/app/shared:ro
     environment:
       DATABASE_URL: postgresql://kakeibo@postgres:5432/kakeibo
       PG_PASSWORD_FILE: /run/secrets/pg_password
@@ -69,6 +75,12 @@ services:
       - ./inbox:/inbox:rw
       - ./archive:/archive:rw
       - ./dead_letter:/dead_letter:rw
+      # ADR-014: 共有コード shared/ を両コンテナに read-only マウントする規約（api と同じ）。
+      - ./shared:/app/shared:ro
+      # ADR-014: マイグレーション資産は postgres サービス所有。worker は実行責務のみを持つため
+      # postgres/src/alembic と alembic.ini を read-only でマウントして alembic CLI から参照する。
+      - ./postgres/src/alembic:/app/postgres/src/alembic:ro
+      - ./postgres/src/alembic.ini:/app/postgres/src/alembic.ini:ro
     environment:
       DATABASE_URL: postgresql://kakeibo@postgres:5432/kakeibo
       PG_PASSWORD_FILE: /run/secrets/pg_password
@@ -121,9 +133,9 @@ services:
   caddy:
     image: caddy:2-alpine
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./caddy_data:/data
-      - ./caddy_config:/config
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/data:/data
+      - ./caddy/config:/config
     networks: [external]
     ports:
       - "127.0.0.1:8443:443"

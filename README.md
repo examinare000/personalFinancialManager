@@ -7,8 +7,12 @@
 
 ## ローカル開発の起動手順
 
-1. uv（Astral）と Docker をインストールしておく。Python 3.12 は uv が自動取得する。
-2. シークレット雛形を複製し、安全な値に書き換える（4 種すべて必須。docs/design/05-security-model.md §5.1 準拠で `chmod 600` を強制する）:
+ホストに必要なのは **Docker Engine** と **GNU Make** のみ。Python / uv / Node.js
+はすべてコンテナ内に閉じ込める（ADR-009 / ADR-014 / ADR-015）。
+
+1. Docker Engine と Make をインストールしておく。
+2. シークレット雛形を複製し、安全な値に書き換える（4 種すべて必須。
+   docs/design/05-security-model.md §5.1 準拠で `chmod 600` を強制する）:
    ```bash
    cp secrets/pg_password.txt.example secrets/pg_password.txt
    cp secrets/anthropic_key.txt.example secrets/anthropic_key.txt
@@ -18,19 +22,26 @@
              secrets/paypal_api_secret.txt secrets/gmail_oauth_token.json
    cp .env.example .env
    ```
-3. 依存をインストールする:
+3. Python コンテナイメージをビルドする（依存は `shared/uv.lock` から `uv sync`
+   される、ホスト uv 不要）:
    ```bash
-   make sync          # dev extras を含む
+   make build
    ```
-4. 開発用 Postgres を起動し、テストを実行する:
+4. テストを実行する（worker コンテナで pytest を起動）:
    ```bash
-   docker compose up -d postgres
    make test
    ```
-5. lint / format / typecheck をまとめて検証する:
+5. lint / format / typecheck をまとめて検証する（すべて worker コンテナ内）:
    ```bash
    make check
    ```
+
+依存を変更したい場合は `shared/pyproject.toml` を編集してから:
+
+```bash
+make lock      # shared/uv.lock を再生成（uv 公式 image 経由）
+make build     # 新しい lock で再ビルド
+```
 
 ## DB 初期化（alembic）
 
@@ -42,16 +53,12 @@ Phase 1.1 以降のマイグレーション本体投入後、開発・本番と�
 # 1) postgres コンテナを起動して healthy になるまで待つ
 docker compose up -d postgres
 
-# 2) api コンテナで alembic upgrade head を実行する（環境変数 DATABASE_URL を再利用）
-docker compose run --rm api alembic upgrade head
+# 2) worker コンテナで alembic upgrade head を実行する（postgres/src/alembic を mount）
+docker compose run --rm worker alembic -c /app/postgres/src/alembic.ini upgrade head
 ```
 
-ローカル uv 環境（コンテナ外）から直接適用する場合は以下:
-
-```bash
-DATABASE_URL=postgresql://kakeibo:devpassword@localhost:5432/kakeibo \
-    uv run alembic upgrade head
-```
+ホスト側に Python を導入していないため、開発ホストから直接 `alembic` を
+叩くことはしない（ADR-015）。必ず worker コンテナ経由で実行する。
 
 ## Docker Compose スタックの起動
 
@@ -96,10 +103,22 @@ docker compose down
 
 | パス | 役割 |
 |---|---|
-| `src/kakeibo/` | コア実装（domain / adapters / ingest / worker / db / config） |
-| `api/`, `worker/` | コンテナ build context（実体は `src/kakeibo/` を import） |
-| `alembic/` | DB マイグレーション |
-| `tests/` | pytest テスト（Phase 0 では `test_environment.py` のみ） |
-| `docs/` | 設計書・ADR・開発プラン |
+| `shared/pyproject.toml` | Python 依存マニフェスト（ADR-015、`[tool.uv].package = false`） |
+| `shared/uv.lock` | universal lockfile（コンテナ内で生成、ホスト uv 不要） |
+| `shared/kakeibo_shared/` | サービス横断の共有 Python モジュール（config / logging / db / domain）。PYTHONPATH 経由で配信 |
+| `api/src/kakeibo_api/` | Flask API サービス専有コード |
+| `api/tests/` | api サービスの振る舞いテスト |
+| `api/Dockerfile` | api コンテナのビルド定義 |
+| `worker/src/kakeibo_worker/` | バッチ worker サービス専有コード（ingest / adapters 等） |
+| `worker/tests/` | worker / kakeibo_shared / alembic のテスト（worker は dev/test 基盤も兼ねる） |
+| `worker/Dockerfile` | worker コンテナのビルド定義 |
+| `postgres/src/alembic/` | DB マイグレーション（postgres サービス所有、worker からマウント実行） |
+| `postgres/src/sql/queries/` | 共通 SQL クエリ（postgres サービス所有） |
+| `postgres/src/alembic.ini` | alembic 設定 |
+| `postgres/docs/plans/`, `worker/docs/plans/` ほか | サービス専有の Phase 別タスク指示書 |
+| `ui/` | Next.js ダッシュボード（Phase 3 以降で UI 本実装） |
+| `caddy/` | リバースプロキシ設定・Caddy 永続ボリューム |
+| `tests/` | リポジトリ横断の構造テスト（compose / docs / 構造、Python パッケージ非依存） |
+| `docs/` | 横断設計書・ADR・横断プラン |
 | `secrets/` | Docker secret 用ファイル雛形（実体は git 追跡対象外） |
 | `inbox/`, `archive/`, `dead_letter/`, `backup/`, `data/` | 取込・保管ディレクトリ（実体は git 追跡対象外） |

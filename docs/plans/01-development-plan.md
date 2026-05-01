@@ -198,7 +198,7 @@ parent: docs/plans/00-initial-design.md
 
 | 項目 | 内容 |
 |---|---|
-| 目的 | Phase 1 完了基準である「SQL で月次サマリが手計算と一致」を満たす集計クエリを `sql/queries/monthly_summary.sql` として配置する |
+| 目的 | Phase 1 完了基準である「SQL で月次サマリが手計算と一致」を満たす集計クエリを `postgres/src/sql/queries/monthly_summary.sql` として配置する |
 | 関連 ADR | ADR-004 |
 | 関連 design | design/01-data-model |
 | ブランチ | `feature/monthly-summary-sql` |

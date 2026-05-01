@@ -1,8 +1,9 @@
 """pytest 共通フィクスチャ・設定。
 
-リポジトリルートを sys.path に追加せず、`src` レイアウトの import が
-パッケージインストール（uv sync の editable install）経由で解決される
-前提に立つ。テスト固有の補助フィクスチャだけを置く。
+リポジトリルートを sys.path に追加せず、ADR-014 のサービス境界別レイアウト
+（``shared/`` ``api/src/`` ``worker/src/``）に対する import がパッケージ
+インストール（uv sync の editable install）経由で解決される前提に立つ。
+テスト固有の補助フィクスチャだけを置く。
 """
 
 from __future__ import annotations

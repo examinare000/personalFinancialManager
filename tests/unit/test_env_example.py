@@ -1,10 +1,11 @@
 """``.env.example`` のキー網羅性検証テスト。
 
 Issue #1 のチェックボックス 5.2「.env.example の最新化」要件に対応。
-``src/kakeibo/api/__main__.py`` の ``API_HOST`` / ``API_PORT`` /
-``FLASK_DEBUG``、``src/kakeibo/worker/main.py`` の
+``api/src/kakeibo_api/__main__.py`` の ``API_HOST`` / ``API_PORT`` /
+``FLASK_DEBUG``、``worker/src/kakeibo_worker/main.py`` の
 ``WORKER_HEARTBEAT_PATH``、``compose.override.yml`` の ``LOG_LEVEL``
 などは ``.env.example`` 上で雛形が示される必要がある。
+（パスは ADR-014 のサービス境界別レイアウトに準拠）
 
 設計準拠:
 - 計画レポート §4.4 / §5.1（write_tests 仕様）

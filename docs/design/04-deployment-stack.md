@@ -88,9 +88,9 @@ services:
   caddy:
     image: caddy:2-alpine
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./caddy_data:/data
-      - ./caddy_config:/config
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/data:/data
+      - ./caddy/config:/config
     networks: [external]
     ports:
       - "127.0.0.1:8443:443"   # Tailscale経由のみアクセス可
@@ -184,13 +184,13 @@ flowchart LR
 | `./archive` | 取込済み原本（永久保存） | すべての階層 |
 | `./dead_letter` | パース失敗ファイル | 一次 |
 | `./backup` | pg_dump生成物 | 二次・三次 |
-| `./caddy_data` | Caddy 自己署名証明書 | なし（再生成可） |
+| `./caddy/data` | Caddy 自己署名証明書 | なし（再生成可） |
 | `./secrets` | Docker secret ファイル | 安全な場所に別途保管 |
 
 ## 6. Caddyfile
 
 ```caddyfile
-# /volume1/docker/kakeibo/Caddyfile
+# /volume1/docker/kakeibo/caddy/Caddyfile
 {
     auto_https off
     local_certs
