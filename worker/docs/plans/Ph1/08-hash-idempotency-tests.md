@@ -63,8 +63,8 @@ last_updated: 2026-04-30
 
 | パス | 役割 |
 |---|---|
-| `tests/unit/domain/test_hash.py` | property-based test 本体（hypothesis 利用） |
-| `tests/unit/domain/test_hash_boundary.py` | 境界条件の表駆動テスト（半角・全角空白、Unicode 正規化等） |
+| `worker/tests/unit/domain/test_hash.py` | property-based test 本体（hypothesis 利用） |
+| `worker/tests/unit/domain/test_hash_boundary.py` | 境界条件の表駆動テスト（半角・全角空白、Unicode 正規化等） |
 | `pyproject.toml` | 既存・参照のみ。hypothesis は `[project.optional-dependencies].dev` に `"hypothesis>=6.100,<7"` として既に宣言済みのため変更不要（`[tool.uv.dev-dependencies]` セクションは存在しない） |
 | `shared/kakeibo_shared/domain/transaction.py` | `compute_hash` 本体（Phase 1.2 で実装済）。本タスクで判明した境界条件に応じて正規化方針を反映する場合のみ変更 |
 
@@ -98,14 +98,14 @@ last_updated: 2026-04-30
 
 ### ユニットテスト（テスト先行）
 
-1. **`test_hash.py`**: hypothesis ベースの property-based test。決定性 + 1 引数違いでの分離 + 衝突ゼロ。
-2. **`test_hash_boundary.py`**: 表駆動テストで以下を検証。
+1. **`worker/tests/unit/domain/test_hash.py`**: hypothesis ベースの property-based test。決定性 + 1 引数違いでの分離 + 衝突ゼロ。
+2. **`worker/tests/unit/domain/test_hash_boundary.py`**: 表駆動テストで以下を検証。
    - 半角空白前後差異（"foo" vs " foo "）。
    - 全角空白を含む（"foo　bar" vs "foo bar"）。
    - 改行コード差異。
    - Unicode 結合文字（"が" vs "か" + 濁点）。
    - 空文字 description の扱い。
-3. **`test_hash.py` の通貨注記**: 同入力で `currency` だけが違うケースは現行 API では区別されないことを `pytest.mark.xfail` または `assert ==` で明示し、コメントで設計意図を残す。
+3. **`worker/tests/unit/domain/test_hash.py` の通貨注記**: 同入力で `currency` だけが違うケースは現行 API では区別されないことを `pytest.mark.xfail` または `assert ==` で明示し、コメントで設計意図を残す。
 
 ### TDD アプローチ
 

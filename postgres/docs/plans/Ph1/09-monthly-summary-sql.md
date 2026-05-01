@@ -49,7 +49,7 @@ Phase1 完了条件 (c)「SQL で月次サマリが手計算と一致」を満�
 
 ## 依存タスク
 
-- `07-phase1-ingest-cli.md`（Phase 1.6 取込CLI: 集計対象となる `transactions` レコードを生成する手段）。
+- `worker/docs/plans/Ph1/07-ingest-cli.md`（Phase 1.6 取込CLI: 集計対象となる `transactions` レコードを生成する手段）。
 
 ## 後続タスク
 
@@ -62,11 +62,11 @@ Phase1 完了条件 (c)「SQL で月次サマリが手計算と一致」を満�
 | パス | 役割 |
 |---|---|
 | `postgres/src/sql/queries/monthly_summary.sql` | 月次サマリ SQL 本体 |
-| `src/kakeibo/sql/__init__.py` | SQL ファイル読込ヘルパ |
-| `src/kakeibo/sql/runner.py` | `run_query(filename, **params)` の実装 |
-| `tests/fixtures/sql/monthly_summary_seed.sql` | テスト用フィクスチャ（小量サンプル取引） |
+| `shared/kakeibo_shared/sql/__init__.py` | SQL ファイル読込ヘルパ（共通：api / worker から再利用） |
+| `shared/kakeibo_shared/sql/runner.py` | `run_query(filename, **params)` の実装 |
+| `tests/fixtures/sql/monthly_summary_seed.sql` | テスト用フィクスチャ（小量サンプル取引、リポジトリルートの横断 fixture） |
 | `tests/fixtures/sql/monthly_summary_expected.json` | 期待される集計結果 |
-| `tests/unit/sql/test_monthly_summary.py` | クエリ実行 + 期待結果比較 |
+| `postgres/tests/sql/test_monthly_summary.py` | クエリ実行 + 期待結果比較 |
 
 ## 実装方針
 

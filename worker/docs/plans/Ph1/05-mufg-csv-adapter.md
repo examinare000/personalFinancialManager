@@ -65,7 +65,7 @@ last_updated: 2026-04-30
 | `tests/fixtures/mufg/sample.csv` | Shift_JIS のゴールデンマスタ（合成データ） |
 | `tests/fixtures/mufg/expected.json` | 期待される `Transaction` リスト（フィールドのスナップショット） |
 | `tests/fixtures/mufg/broken_encoding.csv` | エラーパス用（UTF-8 として作成） |
-| `tests/unit/adapters/test_mufg.py` | ゴールデンマスタテスト + エラーパステスト |
+| `worker/tests/unit/adapters/test_mufg.py` | ゴールデンマスタテスト + エラーパステスト |
 
 ## 実装方針
 

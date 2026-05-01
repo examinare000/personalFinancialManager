@@ -21,8 +21,8 @@ last_updated: 2026-05-01
 | メールパーサ群（Amazon / 楽天 / Yahoo） | `worker/src/kakeibo_worker/adapters/mail/{amazon,rakuten,yahoo}.py` |
 | PayPal API クライアント | `worker/src/kakeibo_worker/adapters/paypal.py` |
 | cron バッチランナー / scheduler | `worker/src/kakeibo_worker/scheduler.py`, `worker/Dockerfile`（cron 関連改修） |
-| Phase2 統合テスト | `tests/integration/{watcher,archiver,mail,paypal,scheduler}/` |
-| メール fixture（合成 .eml） | `tests/fixtures/mail/{amazon,rakuten,yahoo}/*.eml` |
+| Phase2 統合テスト | `worker/tests/integration/{watcher,archiver,mail,paypal,scheduler}/` |
+| メール fixture（合成 .eml） | `tests/fixtures/mail/{amazon,rakuten,yahoo}/*.eml`（横断 fixture） |
 
 ### このディレクトリでは扱わないもの
 
@@ -66,7 +66,7 @@ worker/Ph2/07 (PayPal)
 
 ## 共通の前提
 
-- **Phase1 完了が必須**（`worker/Ph1/01〜07` と `postgres/Ph1/01` が緑）
+- **Phase1 完了が必須**（`worker/docs/plans/Ph1/04〜08` と `postgres/docs/plans/Ph1/02-03` が緑）
 - `pyproject.toml` の dependencies / dev / mail extras は宣言済み（追加は最小限）
 - secrets ファイルは `secrets/*.example` を参考にローカル開発用にコピーして使用（実値は git に絶対コミットしない）
 - `compose.yml` の `worker` 環境変数（`INBOX_PATH`, `GMAIL_OAUTH_TOKEN_FILE` など）は変更不要（既宣言）
@@ -87,9 +87,9 @@ worker/Ph2/07 (PayPal)
 ## 共通の品質ゲート
 
 ```bash
-pytest tests/unit/ tests/integration/   # 該当範囲緑（統合は 5 分以内）
-ruff check .
-pyright
+docker compose run --rm worker pytest worker/tests/unit/ worker/tests/integration/   # 該当範囲緑（統合は 5 分以内）
+docker compose run --rm worker ruff check .
+docker compose run --rm worker pyright
 ```
 
 統合確認（`08-cron-batch-runner.md` 完了後）：

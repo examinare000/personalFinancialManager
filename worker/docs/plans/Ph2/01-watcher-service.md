@@ -51,9 +51,9 @@ last_updated: 2026-05-01
 | `worker/src/kakeibo_worker/ingest/watcher.py` | watchdog `Observer` ベースの Watcher 本体 |
 | `worker/src/kakeibo_worker/ingest/dispatch.py` | ディレクトリ名 → 機関コード判定 + 取込CLI 起動 |
 | `worker/src/kakeibo_worker/main.py` | heartbeat ループに Watcher 起動を統合（既存の API は維持） |
-| `tests/unit/ingest/test_watcher.py` | watchdog をモックしてイベント発火検証 |
-| `tests/unit/ingest/test_dispatch.py` | 機関コード判定とリトライ |
-| `tests/integration/watcher/test_watcher_e2e.py` | `tmp_path` で実ファイル投下 → DB 反映の統合テスト |
+| `worker/tests/unit/ingest/test_watcher.py` | watchdog をモックしてイベント発火検証 |
+| `worker/tests/unit/ingest/test_dispatch.py` | 機関コード判定とリトライ |
+| `worker/tests/integration/watcher/test_watcher_e2e.py` | `tmp_path` で実ファイル投下 → DB 反映の統合テスト |
 
 ## 実装方針
 
@@ -69,9 +69,9 @@ last_updated: 2026-05-01
 
 ### 1. Red
 
-- `tests/unit/ingest/test_watcher.py` で `watchdog.events.FileSystemEvent` を直接ハンドラに渡し、ディスパッチが期待通り呼ばれることを `unittest.mock.MagicMock` で検証。
-- `tests/unit/ingest/test_dispatch.py` で機関コード判定 / 未対応機関で dead_letter 行き / リトライ挙動を検証。
-- `tests/integration/watcher/test_watcher_e2e.py` で `tmp_path` 配下に `mufg/sample.csv` を配置 → 5 秒以内に testcontainers Postgres へ取引が INSERT されることを確認（前提: `worker/Ph1/05` 完了で取込CLI が動く）。
+- `worker/tests/unit/ingest/test_watcher.py` で `watchdog.events.FileSystemEvent` を直接ハンドラに渡し、ディスパッチが期待通り呼ばれることを `unittest.mock.MagicMock` で検証。
+- `worker/tests/unit/ingest/test_dispatch.py` で機関コード判定 / 未対応機関で dead_letter 行き / リトライ挙動を検証。
+- `worker/tests/integration/watcher/test_watcher_e2e.py` で `tmp_path` 配下に `mufg/sample.csv` を配置 → 5 秒以内に testcontainers Postgres へ取引が INSERT されることを確認（前提: `worker/Ph1/05` 完了で取込CLI が動く）。
 - 全件赤になることを確認。
 
 ### 2. Green
@@ -98,10 +98,10 @@ last_updated: 2026-05-01
 ## 品質ゲート
 
 ```bash
-pytest tests/unit/ingest/test_watcher.py tests/unit/ingest/test_dispatch.py
-pytest tests/integration/watcher/      # testcontainers 起動含む
-ruff check .
-pyright
+docker compose run --rm worker pytest worker/tests/unit/ingest/test_watcher.py worker/tests/unit/ingest/test_dispatch.py
+docker compose run --rm worker pytest worker/tests/integration/watcher/      # testcontainers 起動含む
+docker compose run --rm worker ruff check .
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
@@ -124,8 +124,8 @@ Phase 2.1 watchdog Watcher サービスを実装。
 - pyproject.toml（watchdog 追加）
 - worker/src/kakeibo_worker/ingest/{watcher,dispatch}.py
 - worker/src/kakeibo_worker/main.py（拡張）
-- tests/unit/ingest/test_watcher.py / test_dispatch.py
-- tests/integration/watcher/test_watcher_e2e.py
+- worker/tests/unit/ingest/test_watcher.py / test_dispatch.py
+- worker/tests/integration/watcher/test_watcher_e2e.py
 
 ## 検証結果
 - pytest（unit + integration）: 全件緑

@@ -11,7 +11,7 @@ last_updated: 2026-05-01
 
 ## 結論：Phase2 では本サービス向けの新規実装タスクなし
 
-`compose.yml` `postgres` サービス（PostgreSQL 16-alpine）は Phase 1.1（`postgres/Ph1/01-schema-migrations.md`）でスキーマが確定する設計。Phase 2 ではメール取込（Amazon / 楽天 / Yahoo）と PayPal API 取込を `transactions` テーブルに **正規化済みの形で投入** するため、**スキーマ変更は発生しない**。
+`compose.yml` `postgres` サービス（PostgreSQL 16-alpine）は Phase 1.1（`postgres/docs/plans/Ph1/02-db-schema-and-migrations.md`）でスキーマが確定する設計。Phase 2 ではメール取込（Amazon / 楽天 / Yahoo）と PayPal API 取込を `transactions` テーブルに **正規化済みの形で投入** するため、**スキーマ変更は発生しない**。
 
 `docs/plans/01-development-plan.md` §4.2 のタスク 2.1〜2.8 をすべて確認しても、DB スキーマを拡張する項目はない。
 

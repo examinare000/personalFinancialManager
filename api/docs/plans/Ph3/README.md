@@ -22,9 +22,9 @@ last_updated: 2026-05-01
 | 共通エラーハンドラ | `api/src/kakeibo_api/errors.py` |
 | OpenAPI 自動生成 | `api/src/kakeibo_api/openapi.py` |
 | リポジトリ層（psycopg ベース、ORM 不採用） | `shared/kakeibo_shared/db/repositories/` |
-| Categorizer（dry-run 用ロジック） | `src/kakeibo/categorizer/` |
-| 集計 SQL（Phase 1.8 に追加） | `postgres/src/sql/queries/{monthly_balance_trend,category_spending,portfolio_composition}.sql` |
-| API 関連テスト | `tests/unit/api/`, `tests/integration/api/`, `tests/unit/categorizer/` |
+| Categorizer（dry-run 用ロジック、Phase 4.x で worker 側ジョブから再利用） | `api/src/kakeibo_api/categorizer/` |
+| 集計 SQL（Phase 3 で追加、Phase 1.8 の `monthly_summary.sql` と並置） | `postgres/src/sql/queries/{monthly_balance_trend,category_spending,portfolio_composition}.sql` |
+| API 関連テスト | `api/tests/unit/`, `api/tests/integration/`, `api/tests/unit/categorizer/` |
 
 ### このディレクトリでは扱わないもの
 
@@ -80,9 +80,9 @@ api/Ph3/01 (REST API 基盤)
 ## 共通の品質ゲート
 
 ```bash
-pytest tests/unit/api/ tests/integration/api/ tests/unit/categorizer/
-ruff check .
-pyright
+docker compose run --rm worker pytest api/tests/
+docker compose run --rm worker ruff check api/ shared/
+docker compose run --rm worker pyright
 ```
 
 統合確認（`api/Ph3/01〜03` 全完了後）：

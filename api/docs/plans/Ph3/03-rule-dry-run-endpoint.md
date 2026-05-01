@@ -19,7 +19,7 @@ last_updated: 2026-05-01
 
 ## 担当サービス
 
-`compose.yml` `api` サービス。`api/Ph3/01` のルール CRUD を拡張する形で dry-run を追加し、`design/03-categorization-engine.md` の Rule マッチロジックを `src/kakeibo/categorizer/` 配下に実装ファイル化する。
+`compose.yml` `api` サービス。`api/Ph3/01` のルール CRUD を拡張する形で dry-run を追加し、`design/03-categorization-engine.md` の Rule マッチロジックを `api/src/kakeibo_api/categorizer/` 配下に実装ファイル化する。
 
 ## 上流・下流
 
@@ -42,16 +42,16 @@ last_updated: 2026-05-01
 
 | パス | 役割 |
 |---|---|
-| `src/kakeibo/categorizer/__init__.py` | 新規パッケージ |
-| `src/kakeibo/categorizer/rules.py` | `match_rule(rule, transaction) -> bool` の実装 |
-| `src/kakeibo/categorizer/safe_regex.py` | regex タイムアウト保護 |
+| `api/src/kakeibo_api/categorizer/__init__.py` | 新規パッケージ |
+| `api/src/kakeibo_api/categorizer/rules.py` | `match_rule(rule, transaction) -> bool` の実装 |
+| `api/src/kakeibo_api/categorizer/safe_regex.py` | regex タイムアウト保護 |
 | `api/src/kakeibo_api/blueprints/rules.py` | 既存に `POST /api/rules/dry-run` を追加 |
 | `api/src/kakeibo_api/schemas/rule.py` | `DryRunRequest`, `DryRunResponse` を追加（既存に追記） |
 | `shared/kakeibo_shared/db/repositories/rules.py` | 既存に `match_transactions(...)` を追加 |
-| `tests/unit/categorizer/__init__.py` | 新規 |
-| `tests/unit/categorizer/test_rules.py` | match_type 別の単体テスト（regex / contains / exact） |
-| `tests/unit/categorizer/test_safe_regex.py` | ReDoS パターンでのタイムアウト検証 |
-| `tests/unit/api/test_rule_dry_run.py` | エンドポイント契約 + 件数算出 |
+| `api/tests/unit/categorizer/__init__.py` | 新規 |
+| `api/tests/unit/categorizer/test_rules.py` | match_type 別の単体テスト（regex / contains / exact） |
+| `api/tests/unit/categorizer/test_safe_regex.py` | ReDoS パターンでのタイムアウト検証 |
+| `api/tests/unit/test_rule_dry_run.py` | エンドポイント契約 + 件数算出 |
 
 ## 実装方針
 
@@ -103,16 +103,16 @@ Content-Type: application/json
 
 ### 1. Red
 
-- `tests/unit/categorizer/test_safe_regex.py`：
+- `api/tests/unit/categorizer/test_safe_regex.py`：
   - `test_safe_regex_match_normal_pattern_succeeds()`
   - `test_safe_regex_redos_pattern_times_out()`：`(a+)+$` + 30 文字超の `a` 列で `TimeoutError`、テスト全体は 1 秒以内に完了
   - `test_safe_regex_pattern_length_exceeded()`：500 文字超で `ValueError`
-- `tests/unit/categorizer/test_rules.py`：
+- `api/tests/unit/categorizer/test_rules.py`：
   - `test_match_type_regex_matches_pattern()`
   - `test_match_type_contains_substring()`
   - `test_match_type_exact_full_match()`
   - `test_match_type_invalid_raises_value_error()`
-- `tests/unit/api/test_rule_dry_run.py`：
+- `api/tests/unit/test_rule_dry_run.py`：
   - `test_dry_run_returns_zero_for_no_match_pattern()`
   - `test_dry_run_returns_sample_with_at_most_10_transactions()`
   - `test_dry_run_rejects_invalid_match_type()`（422）
@@ -123,7 +123,7 @@ Content-Type: application/json
 
 ### 2. Green
 
-1. `src/kakeibo/categorizer/safe_regex.py` を実装：
+1. `api/src/kakeibo_api/categorizer/safe_regex.py` を実装：
    ```python
    def safe_regex_match(pattern: str, text: str, *, timeout_ms: int = 500) -> bool:
        if len(pattern) > 500:
@@ -137,7 +137,7 @@ Content-Type: application/json
        finally:
            signal.setitimer(signal.ITIMER_REAL, 0)
    ```
-2. `src/kakeibo/categorizer/rules.py` で `match_rule(rule, transaction) -> bool` を実装
+2. `api/src/kakeibo_api/categorizer/rules.py` で `match_rule(rule, transaction) -> bool` を実装
 3. `shared/kakeibo_shared/db/repositories/rules.py` に `match_transactions(conn, *, match_field, match_type, pattern, limit=10)` を追加
 4. `api/src/kakeibo_api/schemas/rule.py` に `DryRunRequest`, `DryRunResponse` を追加
 5. `api/src/kakeibo_api/blueprints/rules.py` に `POST /api/rules/dry-run` を追加
@@ -165,9 +165,9 @@ Content-Type: application/json
 ## 品質ゲート
 
 ```bash
-pytest tests/unit/categorizer/ tests/unit/api/test_rule_dry_run.py
-ruff check .
-pyright
+docker compose run --rm worker pytest api/tests/unit/categorizer/ api/tests/unit/test_rule_dry_run.py
+docker compose run --rm worker ruff check api/ shared/
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
@@ -186,11 +186,11 @@ pyright
 Phase 3.6 ルール dry-run エンドポイントとCategorizerコアを実装。
 
 ## 成果物
-- src/kakeibo/categorizer/{rules,safe_regex}.py
+- api/src/kakeibo_api/categorizer/{__init__,rules,safe_regex}.py
 - api/src/kakeibo_api/blueprints/rules.py（dry-run 追加）
 - api/src/kakeibo_api/schemas/rule.py（DryRunRequest/Response 追加）
 - shared/kakeibo_shared/db/repositories/rules.py（match_transactions 追加）
-- tests/unit/categorizer/* / tests/unit/api/test_rule_dry_run.py
+- api/tests/unit/categorizer/* / api/tests/unit/test_rule_dry_run.py
 
 ## 検証結果
 - pytest 全件緑（< 1 秒で完了、ReDoS テスト含む）

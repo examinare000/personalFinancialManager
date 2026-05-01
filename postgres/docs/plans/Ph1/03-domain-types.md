@@ -65,9 +65,9 @@ last_updated: 2026-04-30
 | `shared/kakeibo_shared/domain/holding.py` | `Holding` dataclass + `SymbolKind` Enum |
 | `shared/kakeibo_shared/domain/balance_snapshot.py` | `BalanceSnapshot` dataclass |
 | `shared/kakeibo_shared/domain/currency.py` | 通貨コードバリデータ |
-| `tests/unit/domain/test_transaction.py` | `Transaction` バリデーション + `compute_hash` 決定性 |
-| `tests/unit/domain/test_holding.py` | `Holding` バリデーション + `SymbolKind` 範囲 |
-| `tests/unit/domain/test_balance_snapshot.py` | `BalanceSnapshot` バリデーション |
+| `worker/tests/unit/domain/test_transaction.py` | `Transaction` バリデーション + `compute_hash` 決定性 |
+| `worker/tests/unit/domain/test_holding.py` | `Holding` バリデーション + `SymbolKind` 範囲 |
+| `worker/tests/unit/domain/test_balance_snapshot.py` | `BalanceSnapshot` バリデーション |
 
 ## 実装方針
 

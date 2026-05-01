@@ -61,7 +61,7 @@ last_updated: 2026-04-30
 | `worker/src/kakeibo_worker/adapters/smbc.py` | `SmbcCsvAdapter` 実装 |
 | `tests/fixtures/smbc/sample.csv` | SMBC ゴールデンマスタ（合成データ） |
 | `tests/fixtures/smbc/expected.json` | 期待される `Transaction` リスト |
-| `tests/unit/adapters/test_smbc.py` | ゴールデンマスタ + 列差分検証 + 摘要正規化テスト |
+| `worker/tests/unit/adapters/test_smbc.py` | ゴールデンマスタ + 列差分検証 + 摘要正規化テスト |
 
 ## 実装方針
 

@@ -49,8 +49,8 @@ last_updated: 2026-05-01
 | `api/src/kakeibo_api/blueprints/aggregations.py` | `GET /api/balances/monthly`, `GET /api/categories/spending`, `GET /api/holdings/composition` |
 | `shared/kakeibo_shared/db/repositories/aggregations.py` | 上記 SQL を psycopg で呼ぶ薄いラッパ |
 | `api/src/kakeibo_api/app.py` | aggregations Blueprint を登録（既存ファクトリへ追記） |
-| `tests/integration/api/test_aggregations.py` | testcontainers + 決定的フィクスチャで集計値の正当性検証 |
-| `tests/unit/api/test_aggregations_validation.py` | クエリパラメータバリデーション |
+| `api/tests/integration/test_aggregations.py` | testcontainers + 決定的フィクスチャで集計値の正当性検証 |
+| `api/tests/unit/test_aggregations_validation.py` | クエリパラメータバリデーション |
 
 ## 実装方針
 
@@ -136,8 +136,8 @@ ORDER BY month;
 
 ### 1. Red
 
-- `tests/unit/api/test_aggregations_validation.py` でクエリパラメータバリデーション
-- `tests/integration/api/test_aggregations.py` で testcontainers + フィクスチャ：
+- `api/tests/unit/test_aggregations_validation.py` でクエリパラメータバリデーション
+- `api/tests/integration/test_aggregations.py` で testcontainers + フィクスチャ：
   - `test_monthly_balance_trend_returns_12_months_by_default()`
   - `test_monthly_balance_trend_with_custom_range()`
   - `test_category_spending_drilldown_includes_subcategories()`
@@ -159,7 +159,7 @@ ORDER BY month;
 ### 3. Refactor
 
 - 期間パラメータの解釈ロジックを `_parse_date_range(from_str, to_str, default_months=12)` に抽出
-- SQL ファイル読込ヘルパは Phase 1.8 の `src/kakeibo/sql/runner.py` を再利用
+- SQL ファイル読込ヘルパは Phase 1.8 で `shared/kakeibo_shared/sql/runner.py` に配置済の `run_query()` を再利用
 
 ## 受入条件
 
@@ -173,9 +173,9 @@ ORDER BY month;
 ## 品質ゲート
 
 ```bash
-pytest tests/integration/api/test_aggregations.py tests/unit/api/test_aggregations_validation.py
-ruff check .
-pyright
+docker compose run --rm worker pytest api/tests/integration/test_aggregations.py api/tests/unit/test_aggregations_validation.py
+docker compose run --rm worker ruff check api/ shared/ postgres/
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
@@ -199,8 +199,8 @@ Phase 3.3〜3.5 集計エンドポイントを実装。
 - api/src/kakeibo_api/blueprints/aggregations.py
 - api/src/kakeibo_api/schemas/aggregations.py
 - shared/kakeibo_shared/db/repositories/aggregations.py
-- tests/integration/api/test_aggregations.py
-- tests/unit/api/test_aggregations_validation.py
+- api/tests/integration/test_aggregations.py
+- api/tests/unit/test_aggregations_validation.py
 
 ## 検証結果
 - pytest 全件緑

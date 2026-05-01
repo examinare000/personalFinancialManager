@@ -51,7 +51,7 @@ last_updated: 2026-05-01
 | `tests/fixtures/mail/amazon/multiple_items.eml` | 複数商品 |
 | `tests/fixtures/mail/amazon/gift_card.eml` | ギフト券利用 |
 | `tests/fixtures/mail/amazon/expected.json` | 期待 Transaction 配列 |
-| `tests/unit/adapters/mail/test_amazon.py` | ゴールデンマスタ + エッジケース |
+| `worker/tests/unit/adapters/mail/test_amazon.py` | ゴールデンマスタ + エッジケース |
 
 ## 実装方針
 
@@ -77,7 +77,7 @@ last_updated: 2026-05-01
 
 - `tests/fixtures/mail/amazon/{normal,multiple_items,gift_card}.eml` を合成データで作成（実注文情報禁止）。
 - `tests/fixtures/mail/amazon/expected.json` に期待 Transaction を記述。
-- `tests/unit/adapters/mail/test_amazon.py`：
+- `worker/tests/unit/adapters/mail/test_amazon.py`：
   - 3 パターン全てでゴールデンマスタ完全一致
   - 金額が `Decimal`、購入は負値
   - 注文番号が `raw_payload["order_id"]` に保持される
@@ -107,9 +107,9 @@ last_updated: 2026-05-01
 ## 品質ゲート
 
 ```bash
-pytest tests/unit/adapters/mail/test_amazon.py
-ruff check .
-pyright
+docker compose run --rm worker pytest worker/tests/unit/adapters/mail/test_amazon.py
+docker compose run --rm worker ruff check .
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
@@ -131,7 +131,7 @@ Phase 2.4 Amazon 注文確認メールパーサを実装。
 - worker/src/kakeibo_worker/adapters/mail/amazon.py
 - tests/fixtures/mail/amazon/{normal,multiple_items,gift_card}.eml
 - tests/fixtures/mail/amazon/expected.json
-- tests/unit/adapters/mail/test_amazon.py
+- worker/tests/unit/adapters/mail/test_amazon.py
 
 ## 検証結果
 - 3 パターン全件緑
