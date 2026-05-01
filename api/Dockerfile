@@ -1,23 +1,23 @@
-# api コンテナ用 Dockerfile。
+# api コンテナ用 Dockerfile（ADR-015 / ADR-014）。
 #
 # 設計指針:
-# - build context はリポジトリルート（compose.yml の context: . を参照）
-#   ADR-014 により共有コードは ``shared/`` 配下にあるため、build context は
-#   引き続きルートを採用し ``shared/`` と ``api/src/`` の両者を COPY する。
-# - uv をベースイメージに導入し、pyproject.toml + uv.lock から依存をインストール
-# - マルチステージで本番イメージから build 用ツールを排除
-# - 非 root ユーザで実行（agent-rules/70-docker-environments.md）
-#
-# 実装メモ:
-# - サービス専有コード: ``api/src/kakeibo_api/`` （Flask アプリ本体）
-# - 共有コード: ``shared/kakeibo_shared/`` （config / logging / db / domain）
-# - 開発時は compose.override.yml が ``./api/src`` ``./shared`` を bind mount する
+# - build context はリポジトリルート（compose.yml の context: . を参照）。
+#   shared/ と api/src/ の両者を COPY するために必須。
+# - uv はホストにインストールせず、本 Dockerfile 内で公式 uv image から
+#   バイナリのみ取得して使う（ADR-015）。
+# - 依存マニフェストは shared/pyproject.toml に集約され、shared/uv.lock で
+#   全 extras を universal lock している（ADR-015）。
+#   本 image は ``--extra api`` で flask + 共通依存だけを導入する。
+# - shared/kakeibo_shared/ は素のモジュール群（ADR-014 Q1=案B）。
+#   COPY 後に PYTHONPATH へ加えて配信する（uv install の対象にはしない）。
+# - マルチステージで本番 image から build 用ツールを排除。
+# - 非 root ユーザで実行（agent-rules/70-docker-environments.md）。
 
 # ── builder stage ──
 FROM python:3.12-slim AS builder
 
-# uv 公式 distroless イメージから uv バイナリだけ取得する。
-# astral-sh/uv の README が推奨する手法で、最小依存で uv を導入できる。
+# uv 公式 distroless image から uv バイナリだけ取得する。
+# ホストへの uv インストールは不要（ADR-015）。
 COPY --from=ghcr.io/astral-sh/uv:0.5 /uv /usr/local/bin/uv
 
 ENV UV_LINK_MODE=copy \
@@ -27,22 +27,20 @@ ENV UV_LINK_MODE=copy \
 
 WORKDIR /app
 
-# 依存解決のためのファイルだけ先に COPY し、レイヤキャッシュを最大化する。
-COPY pyproject.toml uv.lock /app/
+# 依存解決のキャッシュ層: pyproject + lock のみ先に COPY する。
+# shared/uv.lock は universal lock のため、本 image では --extra api だけ選ぶ。
+COPY shared/pyproject.toml shared/uv.lock /app/shared/
 
-# 本番では dev / pdf / mail / llm extras は基本的に不要。
-# Phase 進行に応じて --extra を追加して再ビルドする。
+WORKDIR /app/shared
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project
+    uv sync --frozen --no-install-project --extra api
 
-# アプリ本体を COPY して editable インストール。
-# README.md は pyproject.toml の readme フィールドが参照するため必須。
-# api/src は kakeibo_api パッケージ、shared は kakeibo_shared パッケージ。
-COPY api/src /app/src
-COPY shared /app/shared
-COPY README.md /app/README.md
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen
+# ── ソース配信 ──
+WORKDIR /app
+# shared モジュール群（PYTHONPATH 経由で配信、パッケージとしては install しない）
+COPY shared/kakeibo_shared /app/shared/kakeibo_shared
+# api サービス専有コード
+COPY api/src /app/api/src
 
 # ── runtime stage ──
 FROM python:3.12-slim AS runtime
@@ -59,7 +57,8 @@ COPY --from=builder --chown=kakeibo:kakeibo /app /app
 
 ENV PATH="/opt/venv/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH="/app/shared:/app/api/src"
 
 USER kakeibo
 

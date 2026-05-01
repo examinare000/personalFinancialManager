@@ -523,11 +523,9 @@ wheels = [
 [[package]]
 name = "kakeibo"
 version = "0.1.0"
-source = { editable = "." }
+source = { virtual = "." }
 dependencies = [
-    { name = "alembic" },
     { name = "click" },
-    { name = "flask" },
     { name = "httpx" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
@@ -537,6 +535,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+api = [
+    { name = "flask" },
+]
 dev = [
     { name = "hypothesis" },
     { name = "pyright" },
@@ -556,14 +557,17 @@ mail = [
 pdf = [
     { name = "pypdf" },
 ]
+worker = [
+    { name = "alembic" },
+]
 
 [package.metadata]
 requires-dist = [
-    { name = "alembic", specifier = ">=1.13,<2" },
+    { name = "alembic", marker = "extra == 'worker'", specifier = ">=1.13,<2" },
     { name = "anthropic", marker = "extra == 'llm'", specifier = ">=0.30,<1" },
     { name = "beautifulsoup4", marker = "extra == 'mail'", specifier = ">=4.12,<5" },
     { name = "click", specifier = ">=8.1,<9" },
-    { name = "flask", specifier = ">=3.0,<4" },
+    { name = "flask", marker = "extra == 'api'", specifier = ">=3.0,<4" },
     { name = "httpx", specifier = ">=0.27,<1" },
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.100,<7" },
     { name = "lxml", marker = "extra == 'mail'", specifier = ">=5.2,<6" },
@@ -580,7 +584,7 @@ requires-dist = [
     { name = "structlog", specifier = ">=24.1,<25" },
     { name = "testcontainers", marker = "extra == 'dev'", specifier = ">=4.5,<5" },
 ]
-provides-extras = ["dev", "mail", "pdf", "llm"]
+provides-extras = ["api", "worker", "mail", "pdf", "llm", "dev"]
 
 [[package]]
 name = "lxml"

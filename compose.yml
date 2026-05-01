@@ -79,8 +79,8 @@ services:
       - ./shared:/app/shared:ro
       # ADR-014: マイグレーション資産は postgres サービス所有。worker は実行責務のみを持つため
       # postgres/src/alembic と alembic.ini を read-only でマウントして alembic CLI から参照する。
-      - ./postgres/src/alembic:/app/alembic:ro
-      - ./postgres/src/alembic.ini:/app/alembic.ini:ro
+      - ./postgres/src/alembic:/app/postgres/src/alembic:ro
+      - ./postgres/src/alembic.ini:/app/postgres/src/alembic.ini:ro
     environment:
       DATABASE_URL: postgresql://kakeibo@postgres:5432/kakeibo
       PG_PASSWORD_FILE: /run/secrets/pg_password

@@ -1,56 +1,72 @@
-# pyproject.toml — kakeibo プロジェクトの正本マニフェスト
+# shared/pyproject.toml — kakeibo Python 依存マニフェスト（ADR-015）
 #
-# 方針:
-# - 依存パッケージは [project.dependencies] にマイナーレンジで宣言する
-# - 開発依存は [project.optional-dependencies].dev に集約する
-# - Phase で必要になる重い依存は extras（pdf / mail / llm）で分離する
-# - 厳密な版固定は uv.lock で行う（requirements.txt は採用しない）
-# - ビルドバックエンドは hatchling（src レイアウト）
+# 役割:
+# - api / worker 両 Python コンテナが共通参照する依存マニフェスト
+# - shared 自体は Python パッケージではなく素のモジュール群（ADR-014 Q1=案B）。
+#   ``[tool.uv].package = false`` で「仮想プロジェクト」と宣言し、
+#   uv は依存の解決・ロックだけに使い、shared をビルド/インストールしない。
+# - サービス専有依存は extras（``api`` / ``worker``）で分離し、
+#   各コンテナの Dockerfile が ``uv sync --extra <該当>`` で必要な部分集合のみ導入する。
 #
 # 参照:
+# - docs/adr/015-container-local-python-toolchain.md（本ファイルの根拠）
+# - docs/adr/014-per-service-source-layout.md（サービス境界）
 # - docs/plans/01-development-plan.md §8.1 ツール要件
-# - agent-rules/00-core-principles.md（TDD・日本語）
-# - agent-rules/12-security-guidelines.md（シークレット運用）
-
-[build-system]
-requires = ["hatchling>=1.24"]
-build-backend = "hatchling.build"
 
 [project]
 name = "kakeibo"
 version = "0.1.0"
-description = "個人向け資産・家計管理アプリケーション（NAS + Docker Compose 構成）"
-readme = "README.md"
+description = "個人向け資産・家計管理アプリケーション 共通依存マニフェスト（ADR-015）"
 license = { text = "Proprietary" }
 requires-python = ">=3.12"
 authors = [
     { name = "Ryosuke Ikeda" },
 ]
-keywords = ["finance", "kakeibo", "personal", "self-hosted"]
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.12",
-    "Operating System :: POSIX :: Linux",
-    "License :: Other/Proprietary License",
-    "Private :: Do Not Upload",
-]
 
-# Phase 1〜2 のコア依存。バージョンはマイナーレンジで広めに取り、
-# uv.lock で固定する。
+# 全 Python コンテナが必要とする最小コア依存。
+# pydantic / structlog / sqlalchemy は shared/kakeibo_shared/ が直接利用する。
+# psycopg / click / httpx は worker / api 双方の取込・呼出経路で共通的に使う。
 dependencies = [
-    "flask>=3.0,<4",
-    "sqlalchemy>=2.0,<3",
-    "psycopg[binary]>=3.1,<4",
-    "alembic>=1.13,<2",
     "pydantic>=2.7,<3",
     "pydantic-settings>=2.2,<3",
+    "structlog>=24.1,<25",
+    "sqlalchemy>=2.0,<3",
+    "psycopg[binary]>=3.1,<4",
     "click>=8.1,<9",
     "httpx>=0.27,<1",
-    "structlog>=24.1,<25",
 ]
 
 [project.optional-dependencies]
-# 開発・テスト・品質ゲート用の依存。
+# Flask は api コンテナのみ必要（worker は HTTP サーバを持たない）。
+api = [
+    "flask>=3.0,<4",
+]
+
+# Alembic は worker コンテナが migration 実行主体（postgres/src/alembic を mount）。
+# api コンテナは alembic を実行しないため worker extras に置く。
+worker = [
+    "alembic>=1.13,<2",
+]
+
+# Phase 2.x のメール取込で導入する追加依存（worker のみ）。
+mail = [
+    "mail-parser>=1.0,<2",
+    "beautifulsoup4>=4.12,<5",
+    "lxml>=5.2,<6",
+]
+
+# Phase 1.x（ひふみ投信 PDF）／4.x で導入する PDF パース依存（worker のみ）。
+pdf = [
+    "pypdf>=4.2,<5",
+]
+
+# Phase 4.1 LLM 分類サービスで導入する依存（worker のみ）。
+llm = [
+    "anthropic>=0.30,<1",
+]
+
+# 開発・テスト・品質ゲート用の依存。worker コンテナにのみ導入し、
+# `docker compose run --rm worker pytest ...` で全テスト・lint・typecheck を実行する。
 dev = [
     "pytest>=8.2,<9",
     "pytest-cov>=5.0,<6",
@@ -60,52 +76,30 @@ dev = [
     "pyright>=1.1.360,<2",
 ]
 
-# Phase 2.x のメール取込で導入する追加依存。
-mail = [
-    "mail-parser>=1.0,<2",
-    "beautifulsoup4>=4.12,<5",
-    "lxml>=5.2,<6",
-]
-
-# Phase 1.x（拡張）／4.x で導入する PDF パース依存。
-pdf = [
-    "pypdf>=4.2,<5",
-]
-
-# Phase 4.1 LLM 分類サービスで導入する依存。
-llm = [
-    "anthropic>=0.30,<1",
-]
-
-[project.scripts]
-# Phase 1.6 で取込 CLI を提供する想定のエントリポイント。
-# ADR-014 によりサービス専有の CLI は worker パッケージへ移管する。
-kakeibo-worker = "kakeibo_worker.__main__:main"
-kakeibo-api = "kakeibo_api.__main__:main"
-
-[project.urls]
-Homepage = "https://github.com/examinare000/personalFinancialManager"
-Repository = "https://github.com/examinare000/personalFinancialManager"
+# ──────────────────────────────────────────────────────────────────
+# uv 設定: shared 自体は Python パッケージではないため非ビルド宣言する
+# ──────────────────────────────────────────────────────────────────
+[tool.uv]
+# shared をビルド可能パッケージとして扱わない（=「仮想プロジェクト」）。
+# uv lock / sync は依存の解決・インストールだけに使い、
+# shared/kakeibo_shared/ 自体は Dockerfile の COPY と PYTHONPATH 注入で配信する。
+package = false
 
 # ──────────────────────────────────────────────────────────────────
-# hatchling 設定: ADR-014 のサービス境界別レイアウトを明示する
-# - shared/kakeibo_shared: 共有コード（複数サービスから読まれる）
-# - api/src/kakeibo_api:   Flask API サービス専有
-# - worker/src/kakeibo_worker: バッチ worker サービス専有
-# ──────────────────────────────────────────────────────────────────
-[tool.hatch.build.targets.wheel]
-packages = [
-    "shared/kakeibo_shared",
-    "api/src/kakeibo_api",
-    "worker/src/kakeibo_worker",
-]
-
-# ──────────────────────────────────────────────────────────────────
-# pytest 設定
+# pytest 設定（worker コンテナ内で `pytest` を呼んだ時の規約）
 # ──────────────────────────────────────────────────────────────────
 [tool.pytest.ini_options]
 minversion = "8.0"
-testpaths = ["tests"]
+# CWD = /app/shared を想定。worker コンテナでは
+# - /app/tests          （横断構造テスト、ホスト ./tests を mount）
+# - /app/worker/tests   （worker / kakeibo_shared / alembic 関連テスト）
+# - /app/api/tests      （api Flask テスト、ruff/typecheck 用に mount される）
+# が同時にマウントされており、すべてを一括収集対象とする。
+testpaths = [
+    "../tests",
+    "../worker/tests",
+    "../api/tests",
+]
 addopts = [
     "-ra",
     "--strict-markers",
@@ -113,7 +107,6 @@ addopts = [
 ]
 filterwarnings = [
     "error",
-    # SQLAlchemy / alembic 等が出す DeprecationWarning は将来対応する余地を残す。
     "ignore::DeprecationWarning:sqlalchemy.*",
     "ignore::DeprecationWarning:alembic.*",
 ]
@@ -124,12 +117,18 @@ filterwarnings = [
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-# ADR-014: 各サービスの src と shared を ruff の検査対象として登録する。
-src = ["shared", "api/src", "worker/src", "tests"]
+# CWD = /app/shared を想定し、各サービスの src と shared 自身、
+# 横断テストとサービス専有テストをすべて検査対象とする。
+src = [
+    ".",
+    "../api/src",
+    "../worker/src",
+    "../tests",
+    "../api/tests",
+    "../worker/tests",
+]
 
 [tool.ruff.lint]
-# agressive な選択。後続フェーズで違反が頻発するルールは個別に
-# noqa 指定または per-file-ignores で例外管理する。
 select = [
     "E",    # pycodestyle errors
     "W",    # pycodestyle warnings
@@ -146,8 +145,6 @@ select = [
 ]
 ignore = [
     # 日本語コメント・docstring 内の全角括弧・カタカナ記号は意図的な使用のため許容する。
-    # agent-rules/00-core-principles.md の「日本語使用」原則と整合させるため、
-    # ambiguous 文字検出ルールはプロジェクト全体で無効化する。
     "RUF001",  # 文字列内の ambiguous 文字
     "RUF002",  # docstring 内の ambiguous 文字
     "RUF003",  # コメント内の ambiguous 文字
@@ -155,10 +152,11 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 # テストでは日本語関数名を採用するため pep8-naming を緩める。
-# また、機微な値の検証で `ANN` 系が冗長になるためテストコードは型注釈緩和。
-"tests/**" = ["N802", "N803", "N806", "RUF001", "RUF002", "RUF003"]
+"../tests/**" = ["N802", "N803", "N806", "RUF001", "RUF002", "RUF003"]
+"../worker/tests/**" = ["N802", "N803", "N806", "RUF001", "RUF002", "RUF003"]
+"../api/tests/**" = ["N802", "N803", "N806", "RUF001", "RUF002", "RUF003"]
 # alembic は自動生成ファイルが多くスタイル統一を強制しない。
-"postgres/src/alembic/versions/*.py" = ["E501", "N999"]
+"../postgres/src/alembic/versions/*.py" = ["E501", "N999"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -169,11 +167,19 @@ line-ending = "lf"
 # pyright 設定（strict）
 # ──────────────────────────────────────────────────────────────────
 [tool.pyright]
-include = ["shared", "api/src", "worker/src", "tests", "postgres/src/alembic"]
+include = [
+    ".",
+    "../api/src",
+    "../worker/src",
+    "../tests",
+    "../api/tests",
+    "../worker/tests",
+    "../postgres/src/alembic",
+]
 exclude = [
     "**/__pycache__",
     "**/.venv",
-    "postgres/src/alembic/versions",  # 自動生成は strict 対象外
+    "../postgres/src/alembic/versions",  # 自動生成は strict 対象外
 ]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"
@@ -181,7 +187,6 @@ reportMissingTypeStubs = "warning"
 reportUnknownMemberType = "warning"
 reportUnknownVariableType = "warning"
 reportUnknownArgumentType = "warning"
-# テスト関数の戻り値 None は明示しないでよい慣習に合わせる。
 reportImplicitOverride = "none"
 
 # ──────────────────────────────────────────────────────────────────
@@ -189,7 +194,7 @@ reportImplicitOverride = "none"
 # ──────────────────────────────────────────────────────────────────
 [tool.coverage.run]
 branch = true
-# ADR-014 でパッケージ名が分割されたため、カバレッジ計測も全 3 パッケージを対象とする。
+# ADR-014 のサービス境界別パッケージをすべてカバレッジ対象とする。
 source = ["kakeibo_shared", "kakeibo_api", "kakeibo_worker"]
 
 [tool.coverage.report]

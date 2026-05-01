@@ -6,6 +6,12 @@
 # - ui を 127.0.0.1:3000 に公開（ブラウザで直接ダッシュボードを確認）
 # - worker は profiles で隔離可能にし、開発時にバッチ常駐を抑制
 # - Caddy は本番でしか起動しないので profiles=prod 専用にして開発からは外す
+#
+# ADR-015 によりホストには uv / Python を置かず、テスト・lint・typecheck
+# はすべてコンテナ内で行う。リポジトリ全体を ``./:/workspace`` でマウントし、
+# ``PYTHONPATH`` と ``working_dir`` を /workspace 配下に切り替えることで、
+# ホスト編集が即時反映される hot reload と、コンテナ内でのテスト走行
+# （`docker compose run --rm worker pytest`）の両方を成立させる。
 
 services:
   postgres:
@@ -18,24 +24,31 @@ services:
     environment:
       # 開発時のみ DEBUG ログを有効化する
       LOG_LEVEL: DEBUG
-    # DoD5: ホスト側の編集が即時にコンテナへ反映されるよう、
-    # editable install 済み（uv sync）のソースツリーを bind mount する。
-    # ADR-014 によりサービス専有コードは ``api/src`` 配下、共有コードは
-    # ``shared`` 配下に分離されたため両者をマウントする。
-    # api/Dockerfile の COPY 先（/app/src, /app/shared）と一致させる。
+      # /workspace（ホスト ./ をマウント）配下の shared / api/src を Python
+      # 解決パスに切り替える。本番（override 不適用）では Dockerfile の
+      # PYTHONPATH=/app/shared:/app/api/src のままで動く。
+      PYTHONPATH: /workspace/shared:/workspace/api/src
     volumes:
-      - ./api/src:/app/src
-      - ./shared:/app/shared
+      # リポジトリ全体を /workspace へマウントし、ソース変更を即時反映する。
+      # /app の image-baked コードは PYTHONPATH 上書きで使われなくなるが、
+      # 削除はしない（override 不適用時に本番通り動かすため）。
+      - .:/workspace
+    working_dir: /workspace
 
   worker:
     # 開発では既定で worker を起動しない。明示的に
     # `docker compose --profile worker up worker` で起動する。
+    # テストは profiles に関係なく `docker compose run --rm worker pytest` で実行可能。
     profiles: ["worker"]
-    # DoD5: api と同じ理由でソースツリーを bind mount する。
-    # worker/Dockerfile の COPY 先（/app/src, /app/shared）と一致させる。
     volumes:
-      - ./worker/src:/app/src
-      - ./shared:/app/shared
+      - .:/workspace
+    environment:
+      # worker は dev extras を持つテスト基盤も兼ねるため、api 側のソースも
+      # PYTHONPATH に含める（api の Flask アプリテストを worker で実行するため）。
+      PYTHONPATH: /workspace/shared:/workspace/worker/src:/workspace/api/src
+    # pytest は shared/pyproject.toml を起点に testpaths（../tests, ../worker/tests,
+    # ../api/tests）を解決するため、CWD を /workspace/shared に固定する。
+    working_dir: /workspace/shared
 
   ui:
     ports:

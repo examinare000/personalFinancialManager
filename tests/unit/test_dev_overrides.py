@@ -1,14 +1,16 @@
 """開発用 ``compose.override.yml`` の bind mount 検証テスト。
 
 Issue #1 DoD5「ホスト側のコード変更がコンテナに反映」を満たすため、
-開発時に api / worker のコンテナ ``/app/src`` および ``/app/shared`` に
-ホスト側ソースツリーが bind mount されることを契約として固定する。
+開発時に api / worker のコンテナにリポジトリ全体が ``/workspace`` として
+bind mount されることを契約として固定する。
 
-ADR-014 によりサービス専有コードは ``<service>/src`` 配下、共有コードは
-``shared/`` 配下に分離されたため、それぞれを別マウントとして検証する。
+ADR-015 によりホストには uv / Python を置かず、テスト・lint・typecheck は
+すべてコンテナ内で行うため、ホスト編集の即時反映と、コンテナ内テスト走行
+（pytest が ``shared/pyproject.toml`` の testpaths から横断的にテスト群を
+収集できる）の両方を ``./:/workspace`` マウントで成立させる。
 
 設計準拠:
-- 計画レポート §4.2 / §5.1（write_tests 仕様）
+- ADR-015 §開発者ワークフロー
 - 既存パターン: tests/test_environment.py の `extract_service_block` を再利用
 """
 
@@ -66,41 +68,46 @@ def _compose_config(
     return result.stdout
 
 
-def test_compose_overrideがapiにsrcとsharedをbind_mount(repo_root: Path) -> None:
-    """開発 override マージ後の ``api`` サービス定義に、host ``./api/src`` →
-    コンテナ ``/app/src`` および host ``./shared`` → コンテナ ``/app/shared``
-    の bind mount が両方存在すること。
+def test_compose_overrideがapiにworkspaceマウントとPYTHONPATH切替を持つ(
+    repo_root: Path,
+) -> None:
+    """開発 override マージ後の ``api`` サービス定義が、host リポジトリ全体を
+    コンテナ ``/workspace`` に bind mount し、PYTHONPATH を /workspace 配下に
+    切り替えていること。
 
-    docker compose config の出力では bind mount が
-    ``- /abs/path/to/api/src:/app/src`` あるいは ``type: bind`` 形式で展開される
-    ため、いずれの表現でも検出できるよう ``/app/src`` と ``/app/shared``
-    をマーカーに使う。
+    docker compose config の出力では bind mount は
+    ``- /abs/path/to/repo:/workspace`` あるいは ``type: bind`` の long-form
+    で展開される。``/workspace`` をマーカーに使い、いずれの表現でも検出できる。
     """
     config_text = _compose_config(repo_root)
     api_block = extract_service_block(config_text, "api")
     assert api_block is not None, "merged compose 設定に api サービスが存在しません"
 
-    assert "/app/src" in api_block, (
-        "api サービスに /app/src への bind mount が必要です（dev での hot reload 用）"
+    assert "/workspace" in api_block, (
+        "api サービスに /workspace への bind mount が必要です（ADR-015: 全リポジトリマウント）"
     )
-    assert "/app/shared" in api_block, (
-        "api サービスに /app/shared への bind mount が必要です"
-        "（ADR-014: 共有コードは shared/ をマウント）"
+    repo_abs = str(repo_root.resolve())
+    assert repo_abs in api_block or "source: ." in api_block or "- ." in api_block, (
+        f"api サービスの bind mount source は {repo_abs} （リポジトリルート）である必要があります"
     )
-    api_src_abs = str((repo_root / "api" / "src").resolve())
-    shared_abs = str((repo_root / "shared").resolve())
-    assert api_src_abs in api_block or "./api/src" in api_block, (
-        f"api サービスの bind mount source は {api_src_abs} もしくは ./api/src である必要があります"
+    # PYTHONPATH が /workspace/shared と /workspace/api/src を含むこと。
+    assert "/workspace/shared" in api_block, (
+        "api サービスの PYTHONPATH に /workspace/shared が必要です（ADR-015）"
     )
-    assert shared_abs in api_block or "./shared" in api_block, (
-        f"api サービスの shared bind mount source は {shared_abs} もしくは ./shared である必要があります"
+    assert "/workspace/api/src" in api_block, (
+        "api サービスの PYTHONPATH に /workspace/api/src が必要です（ADR-015）"
     )
 
 
-def test_compose_overrideがworkerにsrcとsharedをbind_mount(repo_root: Path) -> None:
-    """開発 override マージ後の ``worker`` サービス定義に、host ``./worker/src`` →
-    コンテナ ``/app/src`` および host ``./shared`` → コンテナ ``/app/shared``
-    の bind mount が両方存在すること。
+def test_compose_overrideがworkerにworkspaceマウントとPYTHONPATH切替を持つ(
+    repo_root: Path,
+) -> None:
+    """開発 override マージ後の ``worker`` サービス定義が、host リポジトリ全体を
+    コンテナ ``/workspace`` に bind mount し、PYTHONPATH を /workspace 配下に
+    切り替えていること。
+
+    worker は dev/test 基盤も兼ねるため、PYTHONPATH には api/src も含めて
+    クロスサービステストを許可する（ADR-015）。
 
     worker は ``profiles: [worker]`` を持つため、``--profile worker`` で
     activated 状態にしてから config を取得する。
@@ -109,18 +116,25 @@ def test_compose_overrideがworkerにsrcとsharedをbind_mount(repo_root: Path) 
     worker_block = extract_service_block(config_text, "worker")
     assert worker_block is not None, "merged compose 設定に worker サービスが存在しません"
 
-    assert "/app/src" in worker_block, (
-        "worker サービスに /app/src への bind mount が必要です（dev での hot reload 用）"
+    assert "/workspace" in worker_block, (
+        "worker サービスに /workspace への bind mount が必要です（ADR-015: 全リポジトリマウント）"
     )
-    assert "/app/shared" in worker_block, (
-        "worker サービスに /app/shared への bind mount が必要です"
-        "（ADR-014: 共有コードは shared/ をマウント）"
+    repo_abs = str(repo_root.resolve())
+    assert repo_abs in worker_block or "source: ." in worker_block or "- ." in worker_block, (
+        f"worker サービスの bind mount source は {repo_abs} （リポジトリルート）である必要があります"
     )
-    worker_src_abs = str((repo_root / "worker" / "src").resolve())
-    shared_abs = str((repo_root / "shared").resolve())
-    assert worker_src_abs in worker_block or "./worker/src" in worker_block, (
-        f"worker サービスの bind mount source は {worker_src_abs} もしくは ./worker/src である必要があります"
-    )
-    assert shared_abs in worker_block or "./shared" in worker_block, (
-        f"worker サービスの shared bind mount source は {shared_abs} もしくは ./shared である必要があります"
+    # PYTHONPATH が shared / worker/src / api/src を含むこと（横断テストのため）。
+    for required_path in (
+        "/workspace/shared",
+        "/workspace/worker/src",
+        "/workspace/api/src",
+    ):
+        assert required_path in worker_block, (
+            f"worker サービスの PYTHONPATH に {required_path} が必要です（ADR-015）"
+        )
+
+    # pytest が shared/pyproject.toml を起点に動作するため、working_dir が
+    # /workspace/shared に設定されていること。
+    assert "/workspace/shared" in worker_block, (
+        "worker サービスの working_dir が /workspace/shared であること（ADR-015）"
     )
