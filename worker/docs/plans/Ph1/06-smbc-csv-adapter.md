@@ -47,12 +47,12 @@ last_updated: 2026-04-30
 
 ## 依存タスク
 
-- `04-phase1-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC）。
-- `05-phase1-mufg-csv-adapter.md`（Phase 1.4）とは独立で並行可能だが、参考実装として参照する。
+- `worker/docs/plans/Ph1/04-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC）。
+- `worker/docs/plans/Ph1/05-mufg-csv-adapter.md`（Phase 1.4）とは独立で並行可能だが、参考実装として参照する。
 
 ## 後続タスク
 
-- `07-phase1-ingest-cli.md`（Phase 1.6 取込CLI: 本アダプタを呼び出して DB 永続化）。
+- `worker/docs/plans/Ph1/07-ingest-cli.md`（Phase 1.6 取込CLI: 本アダプタを呼び出して DB 永続化）。
 
 ## 対象ファイル/モジュール
 

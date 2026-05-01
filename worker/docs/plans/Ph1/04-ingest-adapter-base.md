@@ -49,12 +49,12 @@ ADR-007（アダプタパターン）に従い、機関別取込実装の共通�
 
 ## 依存タスク
 
-- `03-phase1-domain-types.md`（Phase 1.2）。`Transaction` / `Holding` 型がないと抽象メソッドの戻り値型が書けない。
+- `postgres/docs/plans/Ph1/03-domain-types.md`（Phase 1.2）。`Transaction` / `Holding` 型がないと抽象メソッドの戻り値型が書けない。
 
 ## 後続タスク
 
-- `05-phase1-mufg-csv-adapter.md`（Phase 1.4 MUFG CSV アダプタ）。
-- `06-phase1-smbc-csv-adapter.md`（Phase 1.5 SMBC CSV アダプタ）。
+- `worker/docs/plans/Ph1/05-mufg-csv-adapter.md`（Phase 1.4 MUFG CSV アダプタ）。
+- `worker/docs/plans/Ph1/06-smbc-csv-adapter.md`（Phase 1.5 SMBC CSV アダプタ）。
 - Phase 2 系のメール・API アダプタ（本プラン群の対象外、`01-development-plan.md` §4.2 で扱う）。
 
 ## 対象ファイル/モジュール

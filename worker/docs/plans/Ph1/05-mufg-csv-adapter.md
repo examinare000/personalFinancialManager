@@ -50,11 +50,11 @@ last_updated: 2026-04-30
 
 ## 依存タスク
 
-- `04-phase1-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC）。
+- `worker/docs/plans/Ph1/04-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC）。
 
 ## 後続タスク
 
-- `07-phase1-ingest-cli.md`（Phase 1.6 取込CLI: 本アダプタを呼び出して DB 永続化）。
+- `worker/docs/plans/Ph1/07-ingest-cli.md`（Phase 1.6 取込CLI: 本アダプタを呼び出して DB 永続化）。
 
 ## 対象ファイル/モジュール
 
@@ -69,13 +69,13 @@ last_updated: 2026-04-30
 
 ## 実装方針
 
-1. **`MufgCsvAdapter` クラス**: `IngestAdapter` を継承、`source: ClassVar[str] = "mufg"` を宣言。コンストラクタは ABC 由来の `__init__(self, *, account_id: int)` をそのまま利用し、追加の引数は取らない（`04-phase1-ingest-adapter-base.md` の契約に従う）。`parse(payload: bytes) -> Iterable[Transaction]` を実装し、`account_id` は `self.account_id` から参照する。`extract_holdings` は空のイテラブルを返す。
+1. **`MufgCsvAdapter` クラス**: `IngestAdapter` を継承、`source: ClassVar[str] = "mufg"` を宣言。コンストラクタは ABC 由来の `__init__(self, *, account_id: int)` をそのまま利用し、追加の引数は取らない（`worker/docs/plans/Ph1/04-ingest-adapter-base.md` の契約に従う）。`parse(payload: bytes) -> Iterable[Transaction]` を実装し、`account_id` は `self.account_id` から参照する。`extract_holdings` は空のイテラブルを返す。
 2. **デコード**: `payload.decode("shift_jis")` を `try/except UnicodeDecodeError` で囲み、失敗時は `EncodingMismatchError` を送出。chardet 等の自動判定は **使わない**（リスク R-08 の方針）。
 3. **CSV 解析**: `csv.DictReader` で行イテレーション。MUFG の実フォーマットの列名（例: `日付`, `摘要`, `お支払金額`, `お預り金額`, `差引残高`）を定数化。列が欠損していたら `ColumnMissingError`。
 4. **金額正規化**: 出金額カラムが空でない場合 `amount = -Decimal(value.replace(",", ""))`、入金額カラムが空でない場合 `amount = Decimal(value.replace(",", ""))`。両方空 / 両方ある行は不正データとして例外。
 5. **日付**: `datetime.strptime(row["日付"], "%Y/%m/%d").date()`。年が 2 桁表記の場合は別フォーマットを試行（実 CSV を確認後、フィクスチャに反映）。
 6. **`description` 正規化**: 前後の全角・半角空白除去は **行わない**（ADR-006 の境界条件は Phase 1.7 で確定）。摘要をそのまま採用。
-7. **ハッシュ**: `compute_hash(account_id, occurred_on, amount, description)` を呼ぶ。`account_id` は ABC のコンストラクタで注入された `self.account_id` を参照する（`04-phase1-ingest-adapter-base.md` で確定済の契約）。`parse` 引数で `account_id` を受け取る、または `parse(payload, **context)` への拡張は採用しない。CLI（Phase 1.6）は `MufgCsvAdapter(account_id=...)` でインスタンス化してから `parse(payload)` を呼ぶ。
+7. **ハッシュ**: `compute_hash(account_id, occurred_on, amount, description)` を呼ぶ。`account_id` は ABC のコンストラクタで注入された `self.account_id` を参照する（`worker/docs/plans/Ph1/04-ingest-adapter-base.md` で確定済の契約）。`parse` 引数で `account_id` を受け取る、または `parse(payload, **context)` への拡張は採用しない。CLI（Phase 1.6）は `MufgCsvAdapter(account_id=...)` でインスタンス化してから `parse(payload)` を呼ぶ。
 8. **ゴールデンマスタ**: `tests/fixtures/mufg/sample.csv` に Shift_JIS で 5〜10 行の合成データを置き、`expected.json` と照合。
 
 ## 受入条件

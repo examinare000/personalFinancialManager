@@ -53,9 +53,9 @@ last_updated: 2026-04-30
 
 ## 後続タスク
 
-- `03-phase1-domain-types.md`（Phase 1.2 共通型: 本タスクのスキーマに対応する dataclass を定義）。
-- `04-phase1-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC: 共通型を介して間接依存）。
-- `09-phase1-monthly-summary-sql.md`（Phase 1.8 月次サマリ SQL: `transactions` テーブル定義に依存）。
+- `postgres/docs/plans/Ph1/03-domain-types.md`（Phase 1.2 共通型: 本タスクのスキーマに対応する dataclass を定義）。
+- `worker/docs/plans/Ph1/04-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC: 共通型を介して間接依存）。
+- `postgres/docs/plans/Ph1/09-monthly-summary-sql.md`（Phase 1.8 月次サマリ SQL: `transactions` テーブル定義に依存）。
 
 ## 対象ファイル/モジュール
 

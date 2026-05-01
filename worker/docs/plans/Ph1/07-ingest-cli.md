@@ -51,13 +51,13 @@ last_updated: 2026-04-30
 
 ## 依存タスク
 
-- `05-phase1-mufg-csv-adapter.md`（Phase 1.4 MUFG CSV アダプタ）。
-- `06-phase1-smbc-csv-adapter.md`（Phase 1.5 SMBC CSV アダプタ）。
+- `worker/docs/plans/Ph1/05-mufg-csv-adapter.md`（Phase 1.4 MUFG CSV アダプタ）。
+- `worker/docs/plans/Ph1/06-smbc-csv-adapter.md`（Phase 1.5 SMBC CSV アダプタ）。
 
 ## 後続タスク
 
-- `08-phase1-hash-idempotency-tests.md`（Phase 1.7 ハッシュ冪等性ユニットテスト強化）。
-- `09-phase1-monthly-summary-sql.md`（Phase 1.8 月次サマリ SQL: 本 CLI で投入したデータを集計）。
+- `worker/docs/plans/Ph1/08-hash-idempotency-tests.md`（Phase 1.7 ハッシュ冪等性ユニットテスト強化）。
+- `postgres/docs/plans/Ph1/09-monthly-summary-sql.md`（Phase 1.8 月次サマリ SQL: 本 CLI で投入したデータを集計）。
 - Phase 2.1 Watcher（本プラン群の対象外、`01-development-plan.md` §4.2 で扱う）。
 
 ## 対象ファイル/モジュール

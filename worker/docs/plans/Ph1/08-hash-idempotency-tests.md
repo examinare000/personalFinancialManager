@@ -51,12 +51,12 @@ last_updated: 2026-04-30
 
 ## 依存タスク
 
-- `03-phase1-domain-types.md`（Phase 1.2 共通型: `compute_hash` の実装が前提）。
-- `07-phase1-ingest-cli.md`（Phase 1.6 取込CLI: 実運用の入力データを参考に境界条件を抽出）。
+- `postgres/docs/plans/Ph1/03-domain-types.md`（Phase 1.2 共通型: `compute_hash` の実装が前提）。
+- `worker/docs/plans/Ph1/07-ingest-cli.md`（Phase 1.6 取込CLI: 実運用の入力データを参考に境界条件を抽出）。
 
 ## 後続タスク
 
-- `09-phase1-monthly-summary-sql.md`（Phase 1.8 月次サマリ SQL: 冪等性が保証されてから集計の正確性を検証）。
+- `postgres/docs/plans/Ph1/09-monthly-summary-sql.md`（Phase 1.8 月次サマリ SQL: 冪等性が保証されてから集計の正確性を検証）。
 - Phase 4.4 残高整合性レポート（本プラン群の対象外）が冪等性の保険を活用する。
 
 ## 対象ファイル/モジュール
