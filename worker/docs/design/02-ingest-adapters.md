@@ -2,7 +2,7 @@
 title: 取込アダプタ詳細設計
 version: 1.0
 status: Draft
-last_updated: 2026-04-30
+last_updated: 2026-05-01
 related_adrs:
   - ADR-001
   - ADR-007
