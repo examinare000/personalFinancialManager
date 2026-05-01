@@ -14,7 +14,7 @@ last_updated: 2026-04-30
 
 三井住友銀行（SMBC）の CSV を `Transaction` に正規化する `SmbcCsvAdapter` を実装する。`IngestAdapter` 契約（Phase 1.3）に準拠し、MUFG アダプタ（Phase 1.4）と独立して動作する。MUFG とは列順・列名・摘要正規化の差分が想定されるため、本タスクで SMBC 固有の振る舞いを切り分ける。
 
-参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.5, `docs/design/02-ingest-adapters.md`。
+参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.5, `worker/docs/design/02-ingest-adapters.md`。
 
 ## 目的・背景
 

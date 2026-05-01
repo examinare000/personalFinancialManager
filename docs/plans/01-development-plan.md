@@ -652,14 +652,14 @@ UI 関連は Phase 3.2 以降で `ui/` ディレクトリに `pnpm install` を�
 - `docs/adr/010-tailscale-only-access.md` — Tailscale 限定アクセス
 - `docs/adr/011-no-credentials-storage.md` — 認証情報非保持
 - `docs/adr/012-three-tier-backup.md` — バックアップ3階層
-- `docs/design/01-data-model.md` — データモデル
-- `docs/design/02-ingest-adapters.md` — 取込アダプタ
-- `docs/design/03-categorization-engine.md` — 分類エンジン
+- `postgres/docs/design/01-data-model.md` — データモデル
+- `worker/docs/design/02-ingest-adapters.md` — 取込アダプタ
+- `worker/docs/design/03-categorization-engine.md` — 分類エンジン
 - `docs/design/04-deployment-stack.md` — デプロイ
 - `docs/design/05-security-model.md` — セキュリティ
-- `docs/design/06-reconciler.md` — 連動取引
-- `docs/design/07-output-integrations.md` — 出力連携
-- `docs/design/08-ingest-flow.md` — 取込フロー
+- `worker/docs/design/06-reconciler.md` — 連動取引
+- `worker/docs/design/07-output-integrations.md` — 出力連携
+- `worker/docs/design/08-ingest-flow.md` — 取込フロー
 
 ※ ADR / design ファイルは作成済み。
 

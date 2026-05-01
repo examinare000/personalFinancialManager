@@ -14,7 +14,7 @@ last_updated: 2026-04-30
 
 `python -m kakeibo.ingest <institution> <path>` 相当のコマンドを提供し、**アダプタ起動 → DB 永続化 → 原本退避**までを一気通貫で実行する CLI を実装する。Phase1 完了条件 (b)「同一 CSV を 2 回投入しても `transactions` 行数が増えない」を直接満たす。
 
-参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.6, §3.1 完了条件 (b), `docs/design/02-ingest-adapters.md`, `docs/design/08-ingest-flow.md`。
+参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.6, §3.1 完了条件 (b), `worker/docs/design/02-ingest-adapters.md`, `worker/docs/design/08-ingest-flow.md`。
 
 ## 目的・背景
 

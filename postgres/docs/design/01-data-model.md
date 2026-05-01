@@ -2,7 +2,7 @@
 title: データモデル詳細設計
 version: 1.0
 status: Draft
-last_updated: 2026-04-30
+last_updated: 2026-05-01
 related_adrs:
   - ADR-004
   - ADR-005
@@ -166,7 +166,7 @@ CREATE INDEX ON transactions USING GIN (raw_payload jsonb_path_ops);
 | `counterparty` | 相手先（メール由来は店舗名等を抽出） |
 | `category_source` | 分類経路。`rule`/`llm`/`manual` で再学習対象を区別 |
 | `category_confidence` | LLM分類時の確信度（0.000〜1.000） |
-| `linked_tx_id` | 連動取引（カード利用→銀行引落）のリンク（ADR-006、`docs/design/06-reconciler.md`） |
+| `linked_tx_id` | 連動取引（カード利用→銀行引落）のリンク（ADR-006、`worker/docs/design/06-reconciler.md`） |
 | `raw_payload` | 元レコード全体のJSON保持。再パース可能 |
 | `hash` | 冪等性用のSHA256。詳細は §5 |
 
@@ -196,7 +196,7 @@ CREATE TABLE balance_snapshots (
 );
 ```
 
-`balance_snapshots.source = 'calculated'` は前日残高と当日取引合計から導出した値を表す。CSV取込時の `'csv'` 値とのクロスチェックで残高整合性を検証する（`docs/design/06-reconciler.md`）。
+`balance_snapshots.source = 'calculated'` は前日残高と当日取引合計から導出した値を表す。CSV取込時の `'csv'` 値とのクロスチェックで残高整合性を検証する（`worker/docs/design/06-reconciler.md`）。
 
 ### 3.5 ルール
 
@@ -216,7 +216,7 @@ CREATE TABLE categorization_rules (
 CREATE INDEX ON categorization_rules (priority) WHERE is_active = TRUE;
 ```
 
-評価順序は `priority ASC, id ASC`。詳細は `docs/design/03-categorization-engine.md`。
+評価順序は `priority ASC, id ASC`。詳細は `worker/docs/design/03-categorization-engine.md`。
 
 ## 4. 設計判断
 
@@ -353,4 +353,4 @@ GROUP BY h.symbol_kind;
 - 為替レートテーブル（`fx_rates`）は将来追加。現状はJPYのみ前提。
 - 口座番号の暗号化方式（pgcrypto等）は §10 セキュリティ設計で確定後に追加。
 - `categories` の初期データ（マスタ）は `db/seeds/categories.sql` に分離して投入する想定。
-- LLM 分類時の `category_confidence` 閾値（自動採用 vs 未分類保留）は `docs/design/03-categorization-engine.md` で定義。
+- LLM 分類時の `category_confidence` 閾値（自動採用 vs 未分類保留）は `worker/docs/design/03-categorization-engine.md` で定義。

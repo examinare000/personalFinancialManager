@@ -2,7 +2,7 @@
 title: 取込フロー詳細設計
 version: 1.0
 status: Draft
-last_updated: 2026-04-30
+last_updated: 2026-05-01
 related_adrs:
   - ADR-001
   - ADR-007
@@ -16,7 +16,7 @@ related_adrs:
 
 設計原則:
 - ハイブリッド取得方式（ADR-001）に基づき4経路すべてを統一フローへ収束
-- 共通インターフェース `IngestAdapter`（ADR-007、`docs/design/02-ingest-adapters.md`）に統一
+- 共通インターフェース `IngestAdapter`（ADR-007、`worker/docs/design/02-ingest-adapters.md`）に統一
 - 冪等性は `transactions.hash` UNIQUE で担保（ADR-006）
 - 取り込み済み原本は `/archive/` へ永久保管
 
