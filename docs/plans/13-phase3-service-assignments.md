@@ -45,26 +45,33 @@ last_updated: 2026-05-01
 
 ## 3. サブディレクトリ構成
 
+ADR-014（per-service source layout）により Phase3 タスク指示書も `<service>/docs/plans/Ph3/` に同梱する。
+
 ```
-docs/plans/
-├── 13-phase3-service-assignments.md          # 本ファイル（Phase3 振り分け）
-├── postgres/Ph3/
-│   └── README.md                              # 担当タスクなし宣言
-├── api/Ph3/
-│   ├── README.md                              # api サービス Phase3 一覧
-│   ├── 01-flask-rest-api.md                   # Phase 3.1 主担当（CRUD + OpenAPI + 認証）
-│   ├── 02-aggregation-endpoints.md            # Phase 3.3〜3.5 補助（集計 API）
-│   └── 03-rule-dry-run-endpoint.md            # Phase 3.6 補助（プレビュー）
-├── worker/Ph3/
-│   └── README.md                              # 担当タスクなし宣言
-└── ui/Ph3/
-    ├── README.md                              # ui サービス Phase3 一覧
-    ├── 01-react-dashboard-scaffold.md         # Phase 3.2
-    ├── 02-monthly-trend-chart.md              # Phase 3.3
-    ├── 03-category-spending-view.md           # Phase 3.4
-    ├── 04-portfolio-view.md                   # Phase 3.5
-    ├── 05-rule-editor-ui.md                   # Phase 3.6
-    └── 06-e2e-playwright.md                   # 完了条件 (d) Playwright e2e（横断）
+.
+├── docs/plans/
+│   └── 13-phase3-service-assignments.md          # 本ファイル（Phase3 振り分け）
+│
+├── postgres/docs/plans/Ph3/
+│   └── README.md                                  # 担当タスクなし宣言
+│
+├── api/docs/plans/Ph3/
+│   ├── README.md                                  # api サービス Phase3 一覧
+│   ├── 01-flask-rest-api.md                       # Phase 3.1 主担当（CRUD + OpenAPI + 認証）
+│   ├── 02-aggregation-endpoints.md                # Phase 3.3〜3.5 補助（集計 API）
+│   └── 03-rule-dry-run-endpoint.md                # Phase 3.6 補助（プレビュー）
+│
+├── worker/docs/plans/Ph3/
+│   └── README.md                                  # 担当タスクなし宣言
+│
+└── ui/docs/plans/Ph3/
+    ├── README.md                                  # ui サービス Phase3 一覧
+    ├── 01-react-dashboard-scaffold.md             # Phase 3.2
+    ├── 02-monthly-trend-chart.md                  # Phase 3.3
+    ├── 03-category-spending-view.md               # Phase 3.4
+    ├── 04-portfolio-view.md                       # Phase 3.5
+    ├── 05-rule-editor-ui.md                       # Phase 3.6
+    └── 06-e2e-playwright.md                       # 完了条件 (d) Playwright e2e（横断）
 ```
 
 Phase 3 でも **原典は `docs/plans/01-development-plan.md` §4.3 のみ**（Phase 1 のような独立詳細プランファイルは作らない方針を踏襲）。原典との乖離時は原典優先。
@@ -104,15 +111,15 @@ Phase 3 でも **原典は `docs/plans/01-development-plan.md` §4.3 のみ**（
 
 | 連番 | 担当タスク | 指示書 | 原典（行範囲） | ブランチ | 優先度 |
 |---|---|---|---|---|---|
-| api/01 | Phase 3.1 Flask REST API | [`api/Ph3/01-flask-rest-api.md`](./api/Ph3/01-flask-rest-api.md) | §4.3 L309-319 | `feature/flask-rest-api` | 🔴 高 |
-| api/02 | Phase 3.3〜3.5 集計エンドポイント | [`api/Ph3/02-aggregation-endpoints.md`](./api/Ph3/02-aggregation-endpoints.md) | §4.3 L333-365 | `feature/api-aggregation-endpoints` | 🟡 中 |
-| api/03 | Phase 3.6 ルール dry-run | [`api/Ph3/03-rule-dry-run-endpoint.md`](./api/Ph3/03-rule-dry-run-endpoint.md) | §4.3 L367-377 | `feature/api-rule-dry-run` | 🟡 中 |
-| ui/01 | Phase 3.2 React Dashboard 雛形 | [`ui/Ph3/01-react-dashboard-scaffold.md`](./ui/Ph3/01-react-dashboard-scaffold.md) | §4.3 L321-331 | `feature/react-dashboard-scaffold` | 🔴 高 |
-| ui/02 | Phase 3.3 月次推移グラフ | [`ui/Ph3/02-monthly-trend-chart.md`](./ui/Ph3/02-monthly-trend-chart.md) | §4.3 L333-343 | `feature/monthly-trend-chart` | 🟡 中 |
-| ui/03 | Phase 3.4 カテゴリ別支出ビュー | [`ui/Ph3/03-category-spending-view.md`](./ui/Ph3/03-category-spending-view.md) | §4.3 L345-355 | `feature/category-spending-view` | 🟡 中 |
-| ui/04 | Phase 3.5 ポートフォリオ構成ビュー | [`ui/Ph3/04-portfolio-view.md`](./ui/Ph3/04-portfolio-view.md) | §4.3 L357-365 | `feature/portfolio-view` | 🟡 中 |
-| ui/05 | Phase 3.6 ルール編集UI | [`ui/Ph3/05-rule-editor-ui.md`](./ui/Ph3/05-rule-editor-ui.md) | §4.3 L367-377 | `feature/rule-editor-ui` | 🔴 高 |
-| ui/06 | Phase 3 完了条件 (d) Playwright e2e | [`ui/Ph3/06-e2e-playwright.md`](./ui/Ph3/06-e2e-playwright.md) | §3.3 完了条件 (d) | `feature/playwright-e2e` | 🟡 中 |
+| api/01 | Phase 3.1 Flask REST API | [`api/Ph3/01-flask-rest-api.md`](../../api/docs/plans/Ph3/01-flask-rest-api.md) | §4.3 L309-319 | `feature/flask-rest-api` | 🔴 高 |
+| api/02 | Phase 3.3〜3.5 集計エンドポイント | [`api/Ph3/02-aggregation-endpoints.md`](../../api/docs/plans/Ph3/02-aggregation-endpoints.md) | §4.3 L333-365 | `feature/api-aggregation-endpoints` | 🟡 中 |
+| api/03 | Phase 3.6 ルール dry-run | [`api/Ph3/03-rule-dry-run-endpoint.md`](../../api/docs/plans/Ph3/03-rule-dry-run-endpoint.md) | §4.3 L367-377 | `feature/api-rule-dry-run` | 🟡 中 |
+| ui/01 | Phase 3.2 React Dashboard 雛形 | [`ui/Ph3/01-react-dashboard-scaffold.md`](../../ui/docs/plans/Ph3/01-react-dashboard-scaffold.md) | §4.3 L321-331 | `feature/react-dashboard-scaffold` | 🔴 高 |
+| ui/02 | Phase 3.3 月次推移グラフ | [`ui/Ph3/02-monthly-trend-chart.md`](../../ui/docs/plans/Ph3/02-monthly-trend-chart.md) | §4.3 L333-343 | `feature/monthly-trend-chart` | 🟡 中 |
+| ui/03 | Phase 3.4 カテゴリ別支出ビュー | [`ui/Ph3/03-category-spending-view.md`](../../ui/docs/plans/Ph3/03-category-spending-view.md) | §4.3 L345-355 | `feature/category-spending-view` | 🟡 中 |
+| ui/04 | Phase 3.5 ポートフォリオ構成ビュー | [`ui/Ph3/04-portfolio-view.md`](../../ui/docs/plans/Ph3/04-portfolio-view.md) | §4.3 L357-365 | `feature/portfolio-view` | 🟡 中 |
+| ui/05 | Phase 3.6 ルール編集UI | [`ui/Ph3/05-rule-editor-ui.md`](../../ui/docs/plans/Ph3/05-rule-editor-ui.md) | §4.3 L367-377 | `feature/rule-editor-ui` | 🔴 高 |
+| ui/06 | Phase 3 完了条件 (d) Playwright e2e | [`ui/Ph3/06-e2e-playwright.md`](../../ui/docs/plans/Ph3/06-e2e-playwright.md) | §3.3 完了条件 (d) | `feature/playwright-e2e` | 🟡 中 |
 
 ## 6. 依存関係図
 
@@ -171,7 +178,7 @@ flowchart TD
 
 | # | 判断事項 | 採用 | 理由 |
 |---|---|---|---|
-| 1 | **Vite 移行 vs Next.js 維持** | **Next.js 14 維持** | Phase 0 の Dockerfile / standalone build / healthcheck / 既存テスト保護（`agent-rules/00-core-principles.md` §1）。原典の「Vite + TypeScript + React」は本質である「TypeScript + React」を採用、ビルド基盤は Next.js を継続。差分は `ui/Ph3/01` 内で実装方針として明記。 |
+| 1 | **Vite 移行 vs Next.js 維持** | **Next.js 14 維持** | Phase 0 の Dockerfile（`ui/src/app/{layout,page}.tsx` 配置）/ standalone build / healthcheck / 既存テスト保護（`agent-rules/00-core-principles.md` §1）。原典の「Vite + TypeScript + React」は本質である「TypeScript + React」を採用、ビルド基盤は Next.js を継続。差分は `ui/Ph3/01` 内で実装方針として明記。 |
 | 2 | **状態管理** | `@tanstack/react-query` v5 | データ取得・キャッシュ・mutate の業界標準。Redux / Zustand は YAGNI。 |
 | 3 | **API クライアント型** | OpenAPI から `openapi-typescript` で機械生成 | 手書きは重複リスク。`api/Ph3/01` で `/api/openapi.json` を valid 保証。 |
 | 4 | **OpenAPI 生成（API 側）** | `flask-smorest` | pydantic v2 連携・自動 spec 生成・Swagger UI 同梱。`apispec` 単体は手書き spec 多。 |
@@ -199,11 +206,11 @@ flowchart TD
 - **リスク R-10（Tailscale Funnel）**: ADR-010 §結果で「Funnel 不使用」確定済み、Phase3 に影響なし。
 - **認証ヘッダ実機検証**は Phase 3 内では unit test レベルで完結、本番 Caddy 経路の検証は Phase 4.6 リリース時に実施。
 - **SQLAlchemy ORM 不採用**を Phase 3 でも継続（Phase 1 方針）。Phase 4 以降に再検討余地。
-- **Vite vs Next.js の原典差分**: 原典 §4.3 Phase 3.2 の文言「Vite + TypeScript + React」と本振り分けの実装方針（Next.js 維持）が異なる点について、`ui/Ph3/01` 内で実装方針として明示し、原典は不変扱い。気になる場合は ADR-013 候補として将来起票可能。
+- **Vite vs Next.js の原典差分**: 原典 §4.3 Phase 3.2 の文言「Vite + TypeScript + React」と本振り分けの実装方針（Next.js 維持）が異なる点について、`ui/Ph3/01` 内で実装方針として明示し、原典は不変扱い。気になる場合は将来 ADR を新規発番（ADR-013/014/015 の次番号）して起票可能。
 
 ## 11. Phase 4 への申し送り
 
-Phase 3 完了時点で API + UI が揃い、Phase 4「Polish」に着手可能。Phase 4 着手時に `docs/plans/{api,ui,worker}/Ph4/` を新設する。
+Phase 3 完了時点で API + UI が揃い、Phase 4「Polish」に着手可能。Phase 4 着手時に `<service>/docs/plans/Ph4/`（`api/docs/plans/Ph4/` / `ui/docs/plans/Ph4/` / `worker/docs/plans/Ph4/`）を新設する。
 - `api/Ph3/03` の `categorizer/rules.py` を Phase 4.1 LLM 分類サービスで再利用
 - `ui/Ph3/05` のルール編集 UI を Phase 4.2 半自動学習へ拡張
 - Playwright e2e を Phase 4 のリグレッション一式に組み込み

@@ -174,7 +174,7 @@ parent: docs/plans/00-initial-design.md
 
 | 項目 | 内容 |
 |---|---|
-| 目的 | `python -m kakeibo.ingest <institution> <path>` 相当のコマンドを提供し、アダプタ起動 → DB 永続化 → 原本退避までを一気通貫で実行する |
+| 目的 | `python -m kakeibo_worker.ingest <institution> <path>` 相当のコマンドを提供し、アダプタ起動 → DB 永続化 → 原本退避までを一気通貫で実行する |
 | 関連 ADR | ADR-006（hash 冪等性）, ADR-007 |
 | 関連 design | design/02-ingest-adapters, design/08-ingest-flow |
 | ブランチ | `feature/ingest-cli` |
@@ -198,7 +198,7 @@ parent: docs/plans/00-initial-design.md
 
 | 項目 | 内容 |
 |---|---|
-| 目的 | Phase 1 完了基準である「SQL で月次サマリが手計算と一致」を満たす集計クエリを `postgres/src/sql/queries/monthly_summary.sql` として配置する |
+| 目的 | Phase 1 完了基準である「SQL で月次サマリが手計算と一致」を満たす集計クエリを `postgres/src/sql/queries/monthly_summary.sql` として配置し、SQL ファイル読込ヘルパを `shared/kakeibo_shared/sql/runner.py` に置く |
 | 関連 ADR | ADR-004 |
 | 関連 design | design/01-data-model |
 | ブランチ | `feature/monthly-summary-sql` |
@@ -568,18 +568,19 @@ flowchart TD
 
 ### 8.1 ツール要件
 
-| ツール | バージョン | 用途 |
-|---|---|---|
-| Python | 3.12 以上 | バックエンド / Worker / CLI |
-| PostgreSQL | 16 | DB（ADR-004） |
-| Docker / Docker Compose | 24+ / v2 | ローカル / NAS デプロイ（ADR-009） |
-| Node.js | 20 LTS | UI（Phase 3 以降） |
-| pnpm or npm | 最新安定版 | UI パッケージ管理 |
-| Alembic | 1.13+ | マイグレーション |
-| pytest | 8+ | テストランナー |
-| pyright | 最新 | 型チェック |
-| ruff | 最新 | lint / formatter |
-| Playwright | 最新 | e2e（Phase 3 以降） |
+ADR-015 により Python ツールチェーンはすべてコンテナ内で完結する。下記「ホスト要件」は最小、コンテナ内バージョンは `shared/pyproject.toml` / `ui/package.json` / `*/Dockerfile` で固定。
+
+| ツール | バージョン | 用途 | 配置 |
+|---|---|---|---|
+| Docker / Docker Compose | 24+ / v2 | 唯一のホスト要件（ADR-009 / 015） | ホスト |
+| Python | 3.12 以上 | api / worker コンテナのランタイム | api / worker コンテナ |
+| PostgreSQL | 16 | DB（ADR-004） | postgres コンテナ |
+| Node.js | 20 LTS | UI ビルド・実行 | ui コンテナ |
+| Alembic | 1.13+ | マイグレーション（worker extras 経由） | worker コンテナ内 |
+| pytest / hypothesis / testcontainers | 最新 | テストランナー（dev extras） | worker コンテナ内 |
+| pyright | 1.1.360+ | 型チェック（dev extras） | worker コンテナ内 |
+| ruff | 0.5+ | lint / formatter（dev extras） | worker コンテナ内 |
+| Playwright | 最新 | e2e（Phase 3 以降） | ui コンテナ内 |
 
 ### 8.2 外部サービス・認証情報
 
@@ -594,25 +595,30 @@ flowchart TD
 
 ### 8.3 ローカル開発初期化手順
 
+ADR-015 によりホストには Docker のみを要求し、Python ツールチェーン（uv / pytest / ruff / pyright / alembic）はすべて `worker` コンテナ内で実行する。`shared/pyproject.toml` が共通の依存マニフェストで、`shared/uv.lock` がロックされている。
+
 ```bash
 # 1. リポジトリ取得後
 git checkout develop && git pull origin develop
 
-# 2. Python 仮想環境
-python3.12 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+# 2. secrets を配置（.example をコピーして実値を入れる）
+cp secrets/pg_password.txt.example secrets/pg_password.txt   # 等
 
-# 3. Postgres 起動（Docker Compose）
-docker compose -f docker-compose.dev.yml up -d postgres
+# 3. Postgres / api / worker / ui / caddy をビルド & 起動
+docker compose up -d --build
 
-# 4. マイグレーション
-alembic upgrade head
+# 4. マイグレーション（worker コンテナ内で alembic 実行）
+docker compose run --rm worker alembic -c postgres/src/alembic.ini upgrade head
 
-# 5. テスト実行
-pytest
+# 5. テスト実行（worker コンテナ内で pytest 実行、横断は ./tests、サービス専有は <service>/tests/）
+docker compose run --rm worker pytest tests/ worker/tests/ api/tests/
+
+# 6. lint / typecheck（同様にコンテナ内で実行）
+docker compose run --rm worker ruff check .
+docker compose run --rm worker pyright
 ```
 
-UI 関連は Phase 3.2 以降で `ui/` ディレクトリに `pnpm install` を追加する。
+UI 関連の Node 依存は `ui/Dockerfile` のビルド時に `npm ci` で導入される。Phase 3.2 以降の開発では `docker compose run --rm ui npm run dev` 等を利用する（ホストに Node を入れる必要はない）。
 
 ---
 
