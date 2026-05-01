@@ -42,15 +42,15 @@ Phase 1.1 以降のマイグレーション本体投入後、開発・本番と�
 # 1) postgres コンテナを起動して healthy になるまで待つ
 docker compose up -d postgres
 
-# 2) api コンテナで alembic upgrade head を実行する（環境変数 DATABASE_URL を再利用）
-docker compose run --rm api alembic upgrade head
+# 2) worker コンテナで alembic upgrade head を実行する（postgres/src/alembic を mount）
+docker compose run --rm worker alembic -c /app/alembic.ini upgrade head
 ```
 
 ローカル uv 環境（コンテナ外）から直接適用する場合は以下:
 
 ```bash
 DATABASE_URL=postgresql://kakeibo:devpassword@localhost:5432/kakeibo \
-    uv run alembic upgrade head
+    uv run alembic -c postgres/src/alembic.ini upgrade head
 ```
 
 ## Docker Compose スタックの起動
@@ -98,7 +98,8 @@ docker compose down
 |---|---|
 | `src/kakeibo/` | コア実装（domain / adapters / ingest / worker / db / config） |
 | `api/`, `worker/` | コンテナ build context（実体は `src/kakeibo/` を import） |
-| `alembic/` | DB マイグレーション |
+| `postgres/src/alembic/` | DB マイグレーション（postgres サービス所有、worker からマウント実行） |
+| `postgres/src/sql/queries/` | 共通 SQL クエリ（postgres サービス所有） |
 | `tests/` | pytest テスト（Phase 0 では `test_environment.py` のみ） |
 | `docs/` | 設計書・ADR・開発プラン |
 | `secrets/` | Docker secret 用ファイル雛形（実体は git 追跡対象外） |

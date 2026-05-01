@@ -149,7 +149,7 @@ ignore = [
 # また、機微な値の検証で `ANN` 系が冗長になるためテストコードは型注釈緩和。
 "tests/**" = ["N802", "N803", "N806", "RUF001", "RUF002", "RUF003"]
 # alembic は自動生成ファイルが多くスタイル統一を強制しない。
-"alembic/versions/*.py" = ["E501", "N999"]
+"postgres/src/alembic/versions/*.py" = ["E501", "N999"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -160,11 +160,11 @@ line-ending = "lf"
 # pyright 設定（strict）
 # ──────────────────────────────────────────────────────────────────
 [tool.pyright]
-include = ["src", "tests", "alembic"]
+include = ["src", "tests", "postgres/src/alembic"]
 exclude = [
     "**/__pycache__",
     "**/.venv",
-    "alembic/versions",  # 自動生成は strict 対象外
+    "postgres/src/alembic/versions",  # 自動生成は strict 対象外
 ]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"

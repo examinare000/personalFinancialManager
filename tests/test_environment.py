@@ -149,16 +149,17 @@ def test_alembicコマンドが起動できる() -> None:
 def test_alembic_envがDATABASE_URLを参照する(
     monkeypatch: pytest.MonkeyPatch, repo_root: Path
 ) -> None:
-    """alembic/env.py が環境変数 DATABASE_URL を sqlalchemy.url に解決すること。
+    """alembic env.py が環境変数 DATABASE_URL を sqlalchemy.url に解決すること。
 
     alembic.ini に固定 URL を書かず、ランタイムで環境変数から取得する設計。
+    ADR-014 によりマイグレーション資産は ``postgres/src/alembic/`` 配下に移動済み。
     env.py を import して `_resolve_database_url()` を直接呼ぶ。
     """
     test_url = "postgresql://kakeibo:pw@postgres:5432/kakeibo"
     monkeypatch.setenv("DATABASE_URL", test_url)
 
-    # alembic/ ディレクトリを sys.path に追加して env をモジュールとして読む
-    alembic_dir = repo_root / "alembic"
+    # postgres/src/alembic/ ディレクトリを sys.path に追加して env をモジュールとして読む
+    alembic_dir = repo_root / "postgres" / "src" / "alembic"
     if str(alembic_dir) not in sys.path:
         sys.path.insert(0, str(alembic_dir))
 
@@ -173,7 +174,7 @@ def test_alembic_envがDATABASE_URLを参照する(
     spec.loader.exec_module(module)
 
     assert hasattr(module, "resolve_database_url"), (
-        "alembic/env.py に resolve_database_url() を公開する必要があります"
+        "postgres/src/alembic/env.py に resolve_database_url() を公開する必要があります"
     )
     resolved = module.resolve_database_url()
     assert resolved == test_url
@@ -244,7 +245,7 @@ def test_必須ディレクトリが存在する(repo_root: Path) -> None:
         "dead_letter",
         "backup",
         "data",
-        "alembic/versions",
+        "postgres/src/alembic/versions",
     ]
     for rel in expected_dirs:
         path = repo_root / rel

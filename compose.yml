@@ -69,6 +69,10 @@ services:
       - ./inbox:/inbox:rw
       - ./archive:/archive:rw
       - ./dead_letter:/dead_letter:rw
+      # ADR-014: マイグレーション資産は postgres サービス所有。worker は実行責務のみを持つため
+      # postgres/src/alembic と alembic.ini を read-only でマウントして alembic CLI から参照する。
+      - ./postgres/src/alembic:/app/alembic:ro
+      - ./postgres/src/alembic.ini:/app/alembic.ini:ro
     environment:
       DATABASE_URL: postgresql://kakeibo@postgres:5432/kakeibo
       PG_PASSWORD_FILE: /run/secrets/pg_password
