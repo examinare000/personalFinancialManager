@@ -15,10 +15,10 @@ related_adrs: []
 
 | コンポーネント | 役割 | コードルート |
 |---|---|---|
-| postgres | データの正本（取引・残高・ルール・カテゴリ） | `postgres/`（Phase 1 で新設） |
+| postgres | データの正本（取引・残高・ルール・カテゴリ） | `postgres/`（Phase 0 で配備済。マイグレーション本体は Phase 1.1 で着手） |
 | worker | 取込・分類・連動取引・出力連携バッチ | `worker/` |
 | api | 集計エンドポイント（Flask、Phase 3） | `api/` |
-| ui | ダッシュボード（Next.js、Phase 4） | `ui/` |
+| ui | ダッシュボード（Next.js、Phase 3.2） | `ui/` |
 | caddy | リバースプロキシ・Tailscale 認証 | （ルート設定のみ） |
 | backup | dump/restic | （ルート設定のみ） |
 

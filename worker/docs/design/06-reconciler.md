@@ -74,7 +74,7 @@ def find_link_candidates(
 ### 3.4 機関相性テーブル
 
 ```python
-# reconciler/affinity.py
+# worker/src/kakeibo_worker/reconciler/affinity.py
 KNOWN_PAIRS = {
     ("rakuten_ichiba", "rakuten_card"): 1.0,
     ("amazon", "rakuten_card"): 0.7,
@@ -235,7 +235,7 @@ CREATE TABLE reconciler_alerts (
 新しい機関相性ルール追加時、過去全データを対象に再実行できるCLIを提供:
 
 ```bash
-docker compose run --rm worker python -m reconciler.run \
+docker compose run --rm worker python -m kakeibo_worker.reconciler.run \
   --since 2026-01-01 \
   --until 2026-04-30 \
   --dry-run

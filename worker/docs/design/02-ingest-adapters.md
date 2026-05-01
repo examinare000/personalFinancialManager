@@ -21,7 +21,7 @@ related_adrs:
 ### 2.1 IngestAdapter ABC
 
 ```python
-# adapters/base.py
+# worker/src/kakeibo_worker/adapters/base.py
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Iterable, Union
@@ -58,7 +58,7 @@ class IngestAdapter(ABC):
 ### 2.2 共通型
 
 ```python
-# adapters/types.py
+# shared/kakeibo_shared/domain/{transaction,holding,balance_snapshot}.py（dataclass を分割配置）
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
@@ -230,7 +230,7 @@ class BalanceSnapshot:
 ### 4.1 ディレクトリ構成
 
 ```
-tests/
+tests/                            # リポジトリルート横断 fixture（ADR-014）
   fixtures/
     mufg/
       sample_001.csv
@@ -239,21 +239,28 @@ tests/
       sample_001.csv
       sample_001.expected.json
     ...
+worker/tests/                     # worker サービス専有テスト本体
+  unit/
+    adapters/
+      test_mufg.py
+      test_smbc.py
+      ...
 ```
 
 ### 4.2 テストパターン
 
 ```python
-# tests/adapters/test_mufg.py
+# worker/tests/unit/adapters/test_mufg.py
 import json
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
-from adapters.mufg import MufgCsvAdapter
+from kakeibo_worker.adapters.mufg import MufgCsvAdapter
 
-FIXTURES = Path(__file__).parent.parent / "fixtures" / "mufg"
+# 横断 fixture（リポジトリルート tests/fixtures/mufg/）を解決
+FIXTURES = Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "mufg"
 
 
 @pytest.mark.parametrize("name", ["sample_001"])
@@ -285,9 +292,9 @@ def test_mufg_golden_master(name: str) -> None:
 
 1. **ADR起草**: 取得方式（CSV/メール/API）と判断根拠をADRに残す（必要であれば）。
 2. **フィクスチャ作成**: `tests/fixtures/{code}/sample_001.{csv,eml,json}` に実データのサニタイズ済みサンプルを配置。
-3. **テスト先行**: `tests/adapters/test_{code}.py` で期待動作をassert（TDD、t-wada推奨）。
-4. **アダプタ実装**: `adapters/{code}.py` で `IngestAdapter` を実装。
-5. **登録**: `adapters/__init__.py` の `ADAPTER_REGISTRY` に登録。Watcherがファイル名 / メール送信元から該当アダプタを選択する。
+3. **テスト先行**: `worker/tests/unit/adapters/test_{code}.py` で期待動作をassert（TDD、t-wada推奨）。
+4. **アダプタ実装**: `worker/src/kakeibo_worker/adapters/{code}.py` で `IngestAdapter` を実装。
+5. **登録**: `worker/src/kakeibo_worker/adapters/__init__.py` の `ADAPTER_REGISTRY` に登録。Watcherがファイル名 / メール送信元から該当アダプタを選択する。
 6. **マスタ投入**: `institutions` テーブルに機関を追加するマイグレーション。
 7. **動作確認**: 実データ1ヶ月分を `/inbox/` に投下し、全件正しくINSERTされることを確認。
 

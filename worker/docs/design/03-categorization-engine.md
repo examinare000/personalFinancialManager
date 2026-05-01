@@ -55,7 +55,7 @@ flowchart LR
 ### 3.2 評価アルゴリズム
 
 ```python
-# categorizer/rules.py
+# api/src/kakeibo_api/categorizer/rules.py（Phase 3.6 で配置、worker からも import 可能なように Python パッケージとして export）
 import re
 from dataclasses import dataclass
 from typing import Iterable, Optional

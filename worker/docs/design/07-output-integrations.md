@@ -103,13 +103,13 @@ net: 130000
 ### 3.3 生成スクリプト
 
 ```python
-# tools/export_obsidian.py
+# worker/src/kakeibo_worker/tools/export_obsidian.py
 import argparse
 from datetime import date
 from pathlib import Path
 
-from app.db import session
-from app.exporters.obsidian import build_monthly_markdown
+from kakeibo_shared.db import session
+from kakeibo_worker.exporters.obsidian import build_monthly_markdown
 
 
 def main() -> None:
@@ -137,7 +137,7 @@ if __name__ == "__main__":
 毎月1日午前3時に前月分を生成:
 
 ```cron
-0 3 1 * * docker compose run --rm worker python -m tools.export_obsidian --month $(date -d 'last month' +\%Y-\%m)
+0 3 1 * * docker compose run --rm worker python -m kakeibo_worker.tools.export_obsidian --month $(date -d 'last month' +\%Y-\%m)
 ```
 
 ## 4. CSV export
@@ -170,7 +170,7 @@ if __name__ == "__main__":
 ### 4.4 CLI
 
 ```bash
-docker compose run --rm worker python -m tools.export_csv \
+docker compose run --rm worker python -m kakeibo_worker.tools.export_csv \
   --type transactions \
   --since 2026-01-01 \
   --until 2026-12-31 \
@@ -218,7 +218,7 @@ END:VCALENDAR
 | 任意期間CSV | 手動CLI |
 | 年次iCal | cron 年初 or 手動 |
 
-すべてのツールは `docker compose run --rm worker python -m tools.<name>` で起動可能。
+すべてのツールは `docker compose run --rm worker python -m kakeibo_worker.tools.<name>` で起動可能。
 
 ## 7. エラーハンドリング
 
