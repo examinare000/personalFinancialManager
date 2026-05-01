@@ -49,12 +49,12 @@ last_updated: 2026-04-30
 
 ## 依存タスク
 
-- `02-phase1-db-schema-and-migrations.md`（Phase 1.1）。共通型は DB スキーマと一対一対応で定義するため、スキーマが先に確定している必要がある。
+- `postgres/docs/plans/Ph1/02-db-schema-and-migrations.md`（Phase 1.1）。共通型は DB スキーマと一対一対応で定義するため、スキーマが先に確定している必要がある。
 
 ## 後続タスク
 
-- `04-phase1-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC: `parse(payload) -> Iterable[Transaction]` の戻り値型として参照）。
-- `08-phase1-hash-idempotency-tests.md`（Phase 1.7 ハッシュ冪等性: `compute_hash` の境界条件を property-based test で網羅）。
+- `worker/docs/plans/Ph1/04-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC: `parse(payload) -> Iterable[Transaction]` の戻り値型として参照）。
+- `worker/docs/plans/Ph1/08-hash-idempotency-tests.md`（Phase 1.7 ハッシュ冪等性: `compute_hash` の境界条件を property-based test で網羅）。
 
 ## 対象ファイル/モジュール
 
@@ -65,9 +65,9 @@ last_updated: 2026-04-30
 | `shared/kakeibo_shared/domain/holding.py` | `Holding` dataclass + `SymbolKind` Enum |
 | `shared/kakeibo_shared/domain/balance_snapshot.py` | `BalanceSnapshot` dataclass |
 | `shared/kakeibo_shared/domain/currency.py` | 通貨コードバリデータ |
-| `tests/unit/domain/test_transaction.py` | `Transaction` バリデーション + `compute_hash` 決定性 |
-| `tests/unit/domain/test_holding.py` | `Holding` バリデーション + `SymbolKind` 範囲 |
-| `tests/unit/domain/test_balance_snapshot.py` | `BalanceSnapshot` バリデーション |
+| `worker/tests/unit/domain/test_transaction.py` | `Transaction` バリデーション + `compute_hash` 決定性 |
+| `worker/tests/unit/domain/test_holding.py` | `Holding` バリデーション + `SymbolKind` 範囲 |
+| `worker/tests/unit/domain/test_balance_snapshot.py` | `BalanceSnapshot` バリデーション |
 
 ## 実装方針
 

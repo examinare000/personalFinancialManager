@@ -44,8 +44,8 @@ last_updated: 2026-05-01
 |---|---|
 | `worker/src/kakeibo_worker/ingest/archiver.py` | `archive_success(path)`, `archive_failure(path, error)` の純関数 |
 | `worker/src/kakeibo_worker/ingest/watcher.py` | （既存）archiver 呼び出しを統合 |
-| `tests/unit/ingest/test_archiver.py` | 成功 / 失敗 / 衝突 / エラーログ併置テスト |
-| `tests/integration/archiver/test_archiver_e2e.py` | tmp_path で実ファイル移動を検証 |
+| `worker/tests/unit/ingest/test_archiver.py` | 成功 / 失敗 / 衝突 / エラーログ併置テスト |
+| `worker/tests/integration/archiver/test_archiver_e2e.py` | tmp_path で実ファイル移動を検証 |
 
 ## 実装方針
 
@@ -60,12 +60,12 @@ last_updated: 2026-05-01
 
 ### 1. Red
 
-- `tests/unit/ingest/test_archiver.py`：
+- `worker/tests/unit/ingest/test_archiver.py`：
   - 成功時に `archive_path / mufg / 2026-05 / sample.csv` に移動、inbox から消滅
   - 失敗時に `dead_letter_path / sample.csv` + `sample.csv.error.log`
   - 同名衝突時にタイムスタンプ付きリネーム
   - `error.log` にトークン文字列が含まれていないこと（pytest fixture でログを inspect）
-- `tests/integration/archiver/test_archiver_e2e.py` で実ファイル移動。
+- `worker/tests/integration/archiver/test_archiver_e2e.py` で実ファイル移動。
 
 ### 2. Green
 
@@ -88,9 +88,9 @@ last_updated: 2026-05-01
 ## 品質ゲート
 
 ```bash
-pytest tests/unit/ingest/test_archiver.py tests/integration/archiver/
-ruff check .
-pyright
+docker compose run --rm worker pytest worker/tests/unit/ingest/test_archiver.py worker/tests/integration/archiver/
+docker compose run --rm worker ruff check .
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
@@ -110,8 +110,8 @@ Phase 2.2 アーカイブ移動 + dead letter を実装。
 
 ## 成果物
 - worker/src/kakeibo_worker/ingest/archiver.py
-- tests/unit/ingest/test_archiver.py
-- tests/integration/archiver/test_archiver_e2e.py
+- worker/tests/unit/ingest/test_archiver.py
+- worker/tests/integration/archiver/test_archiver_e2e.py
 
 ## 検証結果
 - 全件緑（unit + integration）

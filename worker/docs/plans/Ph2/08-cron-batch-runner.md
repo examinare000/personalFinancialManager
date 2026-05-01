@@ -50,10 +50,10 @@ last_updated: 2026-05-01
 | `worker/src/kakeibo_worker/jobs/gmail_ingest.py` | Gmail 取込ジョブ（Amazon / 楽天 / Yahoo を順に実行） |
 | `worker/src/kakeibo_worker/jobs/paypal_ingest.py` | PayPal 取込ジョブ |
 | `worker/src/kakeibo_worker/main.py` | `run()` の中で Scheduler を起動（既存 API 互換維持） |
-| `tests/unit/worker/test_scheduler.py` | ジョブ登録 / トリガ時刻 / 実行ログ |
-| `tests/unit/worker/test_gmail_ingest_job.py` | Gmail ジョブが冪等に動く |
-| `tests/unit/worker/test_paypal_ingest_job.py` | PayPal ジョブが冪等に動く |
-| `tests/integration/scheduler/test_scheduler_e2e.py` | 短い間隔でジョブを発火させて DB 反映を確認 |
+| `worker/tests/unit/worker/test_scheduler.py` | ジョブ登録 / トリガ時刻 / 実行ログ |
+| `worker/tests/unit/worker/test_gmail_ingest_job.py` | Gmail ジョブが冪等に動く |
+| `worker/tests/unit/worker/test_paypal_ingest_job.py` | PayPal ジョブが冪等に動く |
+| `worker/tests/integration/scheduler/test_scheduler_e2e.py` | 短い間隔でジョブを発火させて DB 反映を確認 |
 
 ## 実装方針
 
@@ -71,15 +71,15 @@ last_updated: 2026-05-01
 
 ### 1. Red
 
-- `tests/unit/worker/test_scheduler.py`：
+- `worker/tests/unit/worker/test_scheduler.py`：
   - `register_jobs(scheduler)` が 2 ジョブ登録（gmail / paypal）
   - `CronTrigger` の時刻が期待通り
   - SIGTERM 相当で graceful shutdown
-- `tests/unit/worker/test_gmail_ingest_job.py`：
+- `worker/tests/unit/worker/test_gmail_ingest_job.py`：
   - モック Gmail クライアント + モック persister で `gmail_ingest_job()` が Amazon / 楽天 / Yahoo の順に呼ばれる
   - 連続 2 回実行で永続化呼び出し回数は同じだが行数増加なし（モック persister の `ON CONFLICT` 模倣）
-- `tests/unit/worker/test_paypal_ingest_job.py`：同様に PayPal 単独。
-- `tests/integration/scheduler/test_scheduler_e2e.py`：testcontainers Postgres + 短い `next_run_time` で実発火 → DB 反映確認。
+- `worker/tests/unit/worker/test_paypal_ingest_job.py`：同様に PayPal 単独。
+- `worker/tests/integration/scheduler/test_scheduler_e2e.py`：testcontainers Postgres + 短い `next_run_time` で実発火 → DB 反映確認。
 
 ### 2. Green
 
@@ -105,9 +105,9 @@ last_updated: 2026-05-01
 ## 品質ゲート
 
 ```bash
-pytest tests/unit/worker/ tests/integration/scheduler/
-ruff check .
-pyright
+docker compose run --rm worker pytest worker/tests/unit/worker/ worker/tests/integration/scheduler/
+docker compose run --rm worker ruff check .
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
@@ -131,8 +131,8 @@ Phase 2.8 cron バッチ運用化を実装。
 - worker/src/kakeibo_worker/scheduler.py
 - worker/src/kakeibo_worker/jobs/{gmail_ingest,paypal_ingest}.py
 - worker/src/kakeibo_worker/main.py（拡張）
-- tests/unit/worker/{test_scheduler,test_gmail_ingest_job,test_paypal_ingest_job}.py
-- tests/integration/scheduler/test_scheduler_e2e.py
+- worker/tests/unit/worker/{test_scheduler,test_gmail_ingest_job,test_paypal_ingest_job}.py
+- worker/tests/integration/scheduler/test_scheduler_e2e.py
 
 ## 検証結果
 - 全件緑（unit + integration）

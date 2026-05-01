@@ -47,12 +47,12 @@ last_updated: 2026-04-30
 
 ## 依存タスク
 
-- `04-phase1-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC）。
-- `05-phase1-mufg-csv-adapter.md`（Phase 1.4）とは独立で並行可能だが、参考実装として参照する。
+- `worker/docs/plans/Ph1/04-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC）。
+- `worker/docs/plans/Ph1/05-mufg-csv-adapter.md`（Phase 1.4）とは独立で並行可能だが、参考実装として参照する。
 
 ## 後続タスク
 
-- `07-phase1-ingest-cli.md`（Phase 1.6 取込CLI: 本アダプタを呼び出して DB 永続化）。
+- `worker/docs/plans/Ph1/07-ingest-cli.md`（Phase 1.6 取込CLI: 本アダプタを呼び出して DB 永続化）。
 
 ## 対象ファイル/モジュール
 
@@ -61,7 +61,7 @@ last_updated: 2026-04-30
 | `worker/src/kakeibo_worker/adapters/smbc.py` | `SmbcCsvAdapter` 実装 |
 | `tests/fixtures/smbc/sample.csv` | SMBC ゴールデンマスタ（合成データ） |
 | `tests/fixtures/smbc/expected.json` | 期待される `Transaction` リスト |
-| `tests/unit/adapters/test_smbc.py` | ゴールデンマスタ + 列差分検証 + 摘要正規化テスト |
+| `worker/tests/unit/adapters/test_smbc.py` | ゴールデンマスタ + 列差分検証 + 摘要正規化テスト |
 
 ## 実装方針
 

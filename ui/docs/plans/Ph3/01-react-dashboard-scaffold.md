@@ -56,8 +56,8 @@ last_updated: 2026-05-01
 | `ui/lib/query/provider.tsx` | `QueryClientProvider` |
 | `ui/components/layout/AppShell.tsx` | サイドバー + ヘッダ + コンテンツ |
 | `ui/components/feedback/{EmptyState,ErrorState,LoadingState}.tsx` | 共通状態コンポーネント |
-| `ui/app/layout.tsx` | App Router ルート（既存拡張、`AppShell` 組込） |
-| `ui/app/page.tsx` | ダッシュボードトップ（プレースホルダ → 02〜05 で内容追加） |
+| `ui/src/app/layout.tsx` | App Router ルート（既存拡張、`AppShell` 組込） |
+| `ui/src/app/page.tsx` | ダッシュボードトップ（プレースホルダ → 02〜05 で内容追加） |
 | `ui/test/setup.ts` | vitest + Testing Library セットアップ |
 | `ui/test/msw/{server,handlers}.ts` | MSW モックサーバ |
 | `ui/vitest.config.ts` | jsdom 環境、`@/` paths |
@@ -191,8 +191,8 @@ git checkout -b feature/react-dashboard-scaffold
 7. `ui/lib/query/provider.tsx` を実装
 8. `ui/components/feedback/{EmptyState,ErrorState,LoadingState}.tsx` を実装
 9. `ui/components/layout/AppShell.tsx` を実装
-10. `ui/app/layout.tsx` で `AppShell` + `QueryClientProvider` 統合
-11. `ui/app/page.tsx` をダッシュボードトップ（プレースホルダ）に
+10. `ui/src/app/layout.tsx` で `AppShell` + `QueryClientProvider` 統合
+11. `ui/src/app/page.tsx` をダッシュボードトップ（プレースホルダ）に
 
 `package.json` `scripts`：
 ```json
@@ -272,7 +272,7 @@ Phase 3.2 React Dashboard 雛形を実装。
 - ui/styles/globals.css + tailwind 設定
 - ui/test/{setup.ts, msw/*}
 - ui/vitest.config.ts
-- ui/app/{layout,page}.tsx（拡張）
+- ui/src/app/{layout,page}.tsx（拡張）
 - ui/next.config.mjs（rewrites 追加）
 
 ## 検証結果

@@ -49,12 +49,12 @@ ADR-007（アダプタパターン）に従い、機関別取込実装の共通�
 
 ## 依存タスク
 
-- `03-phase1-domain-types.md`（Phase 1.2）。`Transaction` / `Holding` 型がないと抽象メソッドの戻り値型が書けない。
+- `postgres/docs/plans/Ph1/03-domain-types.md`（Phase 1.2）。`Transaction` / `Holding` 型がないと抽象メソッドの戻り値型が書けない。
 
 ## 後続タスク
 
-- `05-phase1-mufg-csv-adapter.md`（Phase 1.4 MUFG CSV アダプタ）。
-- `06-phase1-smbc-csv-adapter.md`（Phase 1.5 SMBC CSV アダプタ）。
+- `worker/docs/plans/Ph1/05-mufg-csv-adapter.md`（Phase 1.4 MUFG CSV アダプタ）。
+- `worker/docs/plans/Ph1/06-smbc-csv-adapter.md`（Phase 1.5 SMBC CSV アダプタ）。
 - Phase 2 系のメール・API アダプタ（本プラン群の対象外、`01-development-plan.md` §4.2 で扱う）。
 
 ## 対象ファイル/モジュール
@@ -63,9 +63,9 @@ ADR-007（アダプタパターン）に従い、機関別取込実装の共通�
 |---|---|
 | `worker/src/kakeibo_worker/adapters/__init__.py` | パッケージ初期化 |
 | `worker/src/kakeibo_worker/adapters/base.py` | `IngestAdapter` ABC 本体 + `source` 属性検証メタクラス（or `__init_subclass__`） |
-| `tests/unit/adapters/__init__.py` | テストパッケージ初期化 |
-| `tests/unit/adapters/test_base.py` | 契約検証（抽象メソッド未実装サブクラスのインスタンス化失敗、`source` 必須） |
-| `tests/unit/adapters/_dummy_adapter.py` | テスト用ダミーアダプタ |
+| `worker/tests/unit/adapters/__init__.py` | テストパッケージ初期化 |
+| `worker/tests/unit/adapters/test_base.py` | 契約検証（抽象メソッド未実装サブクラスのインスタンス化失敗、`source` 必須） |
+| `worker/tests/unit/adapters/_dummy_adapter.py` | テスト用ダミーアダプタ |
 
 ## 実装方針
 
@@ -74,7 +74,7 @@ ADR-007（アダプタパターン）に従い、機関別取込実装の共通�
 3. **`account_id` 注入**: コンストラクタ引数 `account_id` をサブクラス共通で受け取り、`Transaction` 生成時に `self.account_id` を参照する。`parse(payload, account_id=...)` のような可変引数注入や `parse(payload, **context)` 拡張は採用しない（契約の単純化のため）。
 4. **デフォルト実装**: `extract_holdings` は銀行アダプタには無関係なため、デフォルトで空 `Iterable` を返す具体メソッドにする選択肢もあるが、抽象を保ち各サブクラスで `return ()` を明示する方を採用（明示が型安全）。
 5. **エラー型**: パース失敗時はサブクラスが `kakeibo_worker.adapters.errors.AdapterError`（同タスクで定義）を送出する規約とする。型は本タスクで宣言、利用は Phase 1.4 以降。
-6. **ダミーアダプタ**: `tests/unit/adapters/_dummy_adapter.py` に `class DummyAdapter(IngestAdapter)` を実装し、`parse` が固定の `Transaction` リストを返す。`source = "dummy"`、コンストラクタは `DummyAdapter(account_id=...)` で受ける。
+6. **ダミーアダプタ**: `worker/tests/unit/adapters/_dummy_adapter.py` に `class DummyAdapter(IngestAdapter)` を実装し、`parse` が固定の `Transaction` リストを返す。`source = "dummy"`、コンストラクタは `DummyAdapter(account_id=...)` で受ける。
 
 ## 受入条件
 
@@ -97,7 +97,7 @@ ADR-007（アダプタパターン）に従い、機関別取込実装の共通�
 
 ### TDD アプローチ
 
-- Red: `tests/unit/adapters/test_base.py` を先に書き、`from kakeibo_worker.adapters.base import IngestAdapter` で ImportError を起こす。
+- Red: `worker/tests/unit/adapters/test_base.py` を先に書き、`from kakeibo_worker.adapters.base import IngestAdapter` で ImportError を起こす。
 - Green: `IngestAdapter` ABC を最小限で実装、各テストを順に通す。
 - Refactor: `__init_subclass__` 内のバリデーションを別関数に抽出可能なら抽出。
 

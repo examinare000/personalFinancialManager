@@ -17,10 +17,10 @@ related_adrs:
 
 設計原則: ADR-009（NAS + Docker Compose採用）、ADR-010（Tailscale限定アクセス）、ADR-012（バックアップ3階層）。
 
-## 2. docker-compose.yml
+## 2. compose.yml
 
 ```yaml
-# /volume1/docker/kakeibo/docker-compose.yml
+# /volume1/docker/kakeibo/compose.yml
 services:
   postgres:
     image: postgres:16-alpine
@@ -333,7 +333,7 @@ docker compose up -d --no-deps api worker ui
 #    pg_dumpall → 新コンテナで pg_restore
 ```
 
-DBスキーマ変更時は Alembic で migration を実行（`docker compose run --rm worker alembic upgrade head`）。
+DBスキーマ変更時は Alembic で migration を実行（`docker compose run --rm worker alembic -c postgres/src/alembic.ini upgrade head`）。`alembic.ini` は ADR-014 に従い `postgres/src/` 配下に配置されている。
 
 ## 11. 起動・停止
 

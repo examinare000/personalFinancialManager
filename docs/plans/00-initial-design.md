@@ -440,7 +440,7 @@ flowchart LR
 ### 7.1 Docker Composeスタック
 
 ```yaml
-# /volume1/docker/kakeibo/docker-compose.yml
+# /volume1/docker/kakeibo/compose.yml
 services:
   postgres:
     image: postgres:16-alpine

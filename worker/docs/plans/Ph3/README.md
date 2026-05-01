@@ -32,7 +32,7 @@ last_updated: 2026-05-01
 |---|---|---|
 | `pyproject.toml` `[project.dependencies]` への追加（`flask-smorest`, `marshmallow`） | 可（再ビルド必要） | `api/Ph3/01` で発生。worker イメージにも反映されるが起動時は import されない |
 | `shared/kakeibo_shared/__init__.py` の `__version__` 更新 | 可 | リリース時の同期 |
-| `shared/kakeibo_shared/config.py` への認証バイパスフラグ追加 | 慎重に | `api/Ph3/01` で `KAKEIBO_API_AUTH_BYPASS` を Settings に追加する際、worker では参照しないが既存テスト（`tests/unit/test_settings_repr.py`）を壊さないこと |
+| `shared/kakeibo_shared/config.py` への認証バイパスフラグ追加 | 慎重に | `api/Ph3/01` で `KAKEIBO_API_AUTH_BYPASS` を Settings に追加する際、worker では参照しないが既存テスト（`worker/tests/unit/test_settings_repr.py`）を壊さないこと |
 | `worker/Dockerfile` 変更 | 不要 | – |
 
 `agent-rules/00-core-principles.md` の3原則 §1 デグレッション防止と整合：既存の取込パイプラインの動作・既存テストを壊さないこと。
@@ -41,7 +41,7 @@ last_updated: 2026-05-01
 
 Phase 4 で本サービスに変更が必要となる候補：
 
-- **Phase 4.1 LLM 分類サービス**: `api/Ph3/03` で実装される `src/kakeibo/categorizer/rules.py` を再利用しつつ、未マッチ取引を Anthropic API に投げて分類するワーカージョブを `worker/src/kakeibo_worker/jobs/llm_classify.py` として追加
+- **Phase 4.1 LLM 分類サービス**: `api/Ph3/03` で実装される `api/src/kakeibo_api/categorizer/rules.py` を再利用しつつ、未マッチ取引を Anthropic API に投げて分類するワーカージョブを `worker/src/kakeibo_worker/jobs/llm_classify.py` として追加
 - **Phase 4.2 半自動学習**: ルール提案ジョブを `worker/src/kakeibo_worker/jobs/rule_suggest.py` として追加
 - **Phase 4.3 Reconciler**: 連動取引マージのワーカージョブ
 - **Phase 4.4 残高整合性レポート**: 日次整合性チェックジョブ
@@ -55,7 +55,7 @@ Phase3 期間中の起動は **Reviewer のみ**：
 
 | Worker | 役割 |
 |---|---|
-| Reviewer | `api/Ph3/01` で `pyproject.toml` に `flask-smorest` / `marshmallow` が追加されたとき、`worker` コンテナのビルド・起動・既存テスト（`tests/unit/`, `tests/integration/`）が壊れないことを Read のみで確認 |
-| Reviewer | `api/Ph3/03` で実装される `src/kakeibo/categorizer/rules.py` が、Phase 4.1 LLM 分類との接合点として再利用しやすい設計か（責務分離・依存方向）を確認 |
+| Reviewer | `api/Ph3/01` で `pyproject.toml` に `flask-smorest` / `marshmallow` が追加されたとき、`worker` コンテナのビルド・起動・既存テスト（`worker/tests/unit/`, `worker/tests/integration/`）が壊れないことを Read のみで確認 |
+| Reviewer | `api/Ph3/03` で実装される `api/src/kakeibo_api/categorizer/rules.py` が、Phase 4.1 LLM 分類との接合点として再利用しやすい設計か（責務分離・依存方向）を確認 |
 
 Coder / Planner / Git-composer の起動は Phase3 では原則不要。

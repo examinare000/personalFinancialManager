@@ -23,9 +23,9 @@ Phase 1 のタスク（1.1〜1.8）はすべて `postgres` または `worker` �
 | エントリポイント | `api/src/kakeibo_api/__main__.py` |
 | Phase3 で REST 拡張する Blueprint | （未配置）`api/src/kakeibo_api/blueprints/` 想定 |
 | api コンテナ Dockerfile | `api/Dockerfile`（uv マルチステージ） |
-| api コンテナ wrapper | `api/kakeibo_api/__init__.py`（`create_app` 再エクスポートのみ） |
+| api 公開 API（`create_app` 再エクスポート） | `api/src/kakeibo_api/__init__.py` |
 
-`api` コンテナの Dockerfile は `src/kakeibo` 全体を COPY するため、`worker/01〜07` で実装した共通ライブラリ（domain / adapters / ingest / sql）も同じ image に含まれる。Phase 3.1 で REST API を実装する際はこれを再利用する。
+`api` Dockerfile は `api/src/kakeibo_api/` と `shared/kakeibo_shared/` を COPY し、`shared/pyproject.toml` の `[project.optional-dependencies].api` を `uv sync --extra api` で導入する（ADR-014 / ADR-015）。共通ライブラリ（`shared/kakeibo_shared/{config,logging,db,domain}/`）は両コンテナに配備されるため、Phase 3.1 で REST API を実装する際は worker 側で実装したリポジトリ/ドメイン型を再利用する。
 
 ## Phase1 の間に api サービスへ波及する変更（許容例）
 

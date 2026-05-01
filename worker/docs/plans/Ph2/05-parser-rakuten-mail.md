@@ -44,7 +44,7 @@ last_updated: 2026-05-01
 | `tests/fixtures/mail/rakuten/normal.eml` | ポイント利用なし合成メール |
 | `tests/fixtures/mail/rakuten/with_points.eml` | ポイント利用あり |
 | `tests/fixtures/mail/rakuten/expected.json` | 期待 Transaction 配列 |
-| `tests/unit/adapters/mail/test_rakuten.py` | ゴールデンマスタ + ポイント利用 + ハッシュ決定性 |
+| `worker/tests/unit/adapters/mail/test_rakuten.py` | ゴールデンマスタ + ポイント利用 + ハッシュ決定性 |
 
 ## 実装方針
 
@@ -69,7 +69,7 @@ last_updated: 2026-05-01
 
 - `tests/fixtures/mail/rakuten/{normal,with_points}.eml` を合成。
 - `tests/fixtures/mail/rakuten/expected.json` に期待値（ポイント利用額を含む）。
-- `tests/unit/adapters/mail/test_rakuten.py`：
+- `worker/tests/unit/adapters/mail/test_rakuten.py`：
   - ポイント利用なし: `raw_payload["points_used"] == "0"` / `amount == -商品合計`
   - ポイント利用あり: `raw_payload["points_used"] == "<利用額>"` / `amount == -支払金額`
   - 注文番号別で別ハッシュ
@@ -96,9 +96,9 @@ last_updated: 2026-05-01
 ## 品質ゲート
 
 ```bash
-pytest tests/unit/adapters/mail/test_rakuten.py
-ruff check .
-pyright
+docker compose run --rm worker pytest worker/tests/unit/adapters/mail/test_rakuten.py
+docker compose run --rm worker ruff check .
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
@@ -119,7 +119,7 @@ Phase 2.5 楽天市場 注文確認メールパーサを実装。
 - worker/src/kakeibo_worker/adapters/mail/rakuten.py
 - tests/fixtures/mail/rakuten/{normal,with_points}.eml
 - tests/fixtures/mail/rakuten/expected.json
-- tests/unit/adapters/mail/test_rakuten.py
+- worker/tests/unit/adapters/mail/test_rakuten.py
 
 ## 検証結果
 - 全件緑（2 パターン）

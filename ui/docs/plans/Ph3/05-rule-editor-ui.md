@@ -19,7 +19,7 @@ last_updated: 2026-05-01
 
 ## 担当サービス
 
-`compose.yml` `ui` サービス。`ui/app/rules/` にルール一覧と編集ページを追加。`api/Ph3/01` の Rule CRUD と `api/Ph3/03` の dry-run を呼び出す。
+`compose.yml` `ui` サービス。`ui/src/app/rules/` にルール一覧と編集ページを追加。`api/Ph3/01` の Rule CRUD と `api/Ph3/03` の dry-run を呼び出す。
 
 ## 上流・下流
 
@@ -50,9 +50,9 @@ last_updated: 2026-05-01
 | `ui/components/rules/RuleList.tsx` | dnd-kit ソート可能リスト |
 | `ui/components/rules/RuleDragHandle.tsx` | ドラッグハンドル（accessibility 対応） |
 | `ui/components/rules/ApplyToExistingDialog.tsx` | 「既存取引に適用しますか？」モーダル |
-| `ui/app/rules/page.tsx` | ルール一覧 |
-| `ui/app/rules/[id]/page.tsx` | ルール編集 |
-| `ui/app/rules/new/page.tsx` | ルール新規作成 |
+| `ui/src/app/rules/page.tsx` | ルール一覧 |
+| `ui/src/app/rules/[id]/page.tsx` | ルール編集 |
+| `ui/src/app/rules/new/page.tsx` | ルール新規作成 |
 | 各 `__tests__/` | フォームバリデーション・ドラッグ並び替え・dry-run プレビュー |
 
 ## 実装方針
@@ -131,7 +131,7 @@ last_updated: 2026-05-01
 5. `ui/components/rules/RuleList.tsx` で `@dnd-kit` ベースソート
 6. `ui/components/rules/RuleDragHandle.tsx` でアクセシブルなハンドル
 7. `ui/components/rules/ApplyToExistingDialog.tsx` で確認モーダル
-8. `ui/app/rules/{page.tsx, [id]/page.tsx, new/page.tsx}` で統合
+8. `ui/src/app/rules/{page.tsx, [id]/page.tsx, new/page.tsx}` で統合
 
 ### 3. Refactor
 
@@ -185,7 +185,7 @@ Phase 3.6 ルール編集UI を実装。
 - ui/package.json（dnd-kit / react-hook-form 追加）
 - ui/lib/api/rules.ts
 - ui/components/rules/{RuleForm,RuleList,RulePreview,RuleDragHandle,ApplyToExistingDialog}.tsx
-- ui/app/rules/{page.tsx, [id]/page.tsx, new/page.tsx}
+- ui/src/app/rules/{page.tsx, [id]/page.tsx, new/page.tsx}
 - 各 __tests__/
 
 ## 検証結果

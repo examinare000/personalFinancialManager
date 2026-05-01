@@ -11,7 +11,7 @@ last_updated: 2026-05-01
 
 ## 結論：Phase1 では本サービス向けの新規実装タスクなし
 
-`compose.yml` `ui` サービス（Next.js / Node.js 20 LTS）は **Phase 0 で雛形が配備済み**。`ui/app/{layout.tsx,page.tsx}` の最小ページが起動するのみで、Phase 1 の MVP（CSV → DB → SQL）には UI が必要ない。
+`compose.yml` `ui` サービス（Next.js / Node.js 20 LTS）は **Phase 0 で雛形が配備済み**。`ui/src/app/{layout.tsx,page.tsx}` の最小ページが起動するのみで、Phase 1 の MVP（CSV → DB → SQL）には UI が必要ない。
 
 Phase 1 のタスク（1.1〜1.8）はすべて `postgres` または `worker` サービスに帰属する。`docs/plans/10-phase1-overview.md` §2 のタスク一覧で UI を変更する項目は存在しない。
 
@@ -19,7 +19,7 @@ Phase 1 のタスク（1.1〜1.8）はすべて `postgres` または `worker` �
 
 | 範囲 | パス |
 |---|---|
-| Next.js アプリ本体 | `ui/app/` |
+| Next.js アプリ本体 | `ui/src/app/` |
 | 設定 | `ui/{next.config.mjs, tsconfig.json, package.json, package-lock.json}` |
 | Dockerfile（multi-stage） | `ui/Dockerfile` |
 | .gitignore | `ui/.gitignore` |

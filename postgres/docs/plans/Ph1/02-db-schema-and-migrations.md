@@ -38,7 +38,7 @@ last_updated: 2026-04-30
 - 7 テーブルの初期スキーマ migration 一式（5 ファイル分割）を `postgres/src/alembic/versions/` 配下に追加。
 - `transactions.hash` の UNIQUE インデックス、`amount` の NUMERIC 型と CHECK 制約、`category_source` ENUM の制約定義。
 - マイグレーションの冪等性検証（2 回連続適用が無害である）。
-- スキーマ存在検証用ユニットテストフィクスチャ（dev 依存に宣言済みの `testcontainers` を用いてテスト用 Postgres コンテナを起動、または既存 `tests/_compose_utils.py` で読み込む `docker-compose.test.yml` 経由で利用）。
+- スキーマ存在検証用ユニットテストフィクスチャ（dev 依存に宣言済みの `testcontainers` を用いてテスト用 Postgres コンテナを起動、または既存 `tests/_compose_utils.py` で読み込む `compose.test.yml` 経由で利用）。
 
 ### 含まない
 
@@ -53,9 +53,9 @@ last_updated: 2026-04-30
 
 ## 後続タスク
 
-- `03-phase1-domain-types.md`（Phase 1.2 共通型: 本タスクのスキーマに対応する dataclass を定義）。
-- `04-phase1-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC: 共通型を介して間接依存）。
-- `09-phase1-monthly-summary-sql.md`（Phase 1.8 月次サマリ SQL: `transactions` テーブル定義に依存）。
+- `postgres/docs/plans/Ph1/03-domain-types.md`（Phase 1.2 共通型: 本タスクのスキーマに対応する dataclass を定義）。
+- `worker/docs/plans/Ph1/04-ingest-adapter-base.md`（Phase 1.3 IngestAdapter ABC: 共通型を介して間接依存）。
+- `postgres/docs/plans/Ph1/09-monthly-summary-sql.md`（Phase 1.8 月次サマリ SQL: `transactions` テーブル定義に依存）。
 
 ## 対象ファイル/モジュール
 
@@ -69,8 +69,8 @@ last_updated: 2026-04-30
 | `postgres/src/alembic/versions/0004_create_holdings_and_snapshots.py` | 新規 | 保有銘柄・残高スナップショット |
 | `postgres/src/alembic/versions/0005_create_categorization_rules.py` | 新規 | カテゴリルール |
 | `shared/kakeibo_shared/db/__init__.py` | 新規 | DB 接続ヘルパ（テスト用エンジン共有） |
-| `tests/unit/db/test_schema.py` | 新規 | 全テーブル・全制約の存在検証 |
-| `tests/unit/db/test_migration_idempotency.py` | 新規 | 冪等性検証 |
+| `postgres/tests/unit/db/test_schema.py` | 新規 | 全テーブル・全制約の存在検証 |
+| `postgres/tests/unit/db/test_migration_idempotency.py` | 新規 | 冪等性検証 |
 
 実装段階で具体ファイル名・分割は微調整可（マイグレーション粒度 5 分割は固定）。既存 `postgres/src/alembic/`・`postgres/src/alembic.ini`・`postgres/src/alembic/env.py` を再初期化（`alembic init`）してはならない。
 
@@ -83,13 +83,13 @@ last_updated: 2026-04-30
 5. **`category_source` ENUM**: PostgreSQL ENUM 型として `('rule', 'llm', 'manual')` を作成（`postgresql.ENUM`）。マイグレーションのダウン側で型もドロップ。
 6. **JSONB**: `transactions.raw_payload` は `JSONB` 型（ADR-004）。NULL 可、デフォルト `'{}'::jsonb`。
 7. **冪等性**: Alembic は同じ revision に対し 2 回目の `upgrade head` を no-op として扱うため、1 回目成功後 2 回目を実行してもエラーが出ないことを統合テストで確認する。
-8. **テスト用 Postgres**: ユニットテストでは dev 依存に宣言済みの `testcontainers`（pyproject.toml `[project.optional-dependencies].dev` 参照）でテスト用 Postgres コンテナを立ち上げる、または既存 `tests/_compose_utils.py` ユーティリティ経由で `docker-compose.test.yml` を起動する。テストごとに一時 DB を作成→マイグレーション適用→検証→破棄。`pytest-postgresql` は dev 依存に未宣言のため採用しない。
+8. **テスト用 Postgres**: ユニットテストでは dev 依存に宣言済みの `testcontainers`（shared/pyproject.toml `[project.optional-dependencies].dev` 参照）でテスト用 Postgres コンテナを立ち上げる、または既存 `tests/_compose_utils.py` ユーティリティ経由で `compose.test.yml` を起動する。テストごとに一時 DB を作成→マイグレーション適用→検証→破棄。`pytest-postgresql` は dev 依存に未宣言のため採用しない。
 
 ## 受入条件
 
 - `alembic upgrade head` が空 DB に対して成功する。
 - `alembic upgrade head` を 2 回連続で実行しても 2 回目が no-op として成功する（冪等）。
-- `pytest tests/unit/db/test_schema.py` が以下を緑で検証する。
+- `docker compose run --rm worker pytest postgres/tests/unit/db/test_schema.py` が以下を緑で検証する。
   - 7 テーブルすべての存在。
   - 各テーブルの主要カラム（`amount`, `hash`, `category_source`, `raw_payload` 等）の型と NULL 制約。
   - `transactions.hash` の UNIQUE インデックス存在。
@@ -113,7 +113,7 @@ last_updated: 2026-04-30
 
 ### TDD アプローチ
 
-- Red: マイグレーションを書く前に `test_schema.py` の検証ロジックを書き、期待スキーマと実 DB が一致しないため落ちることを確認。
+- Red: マイグレーションを書く前に `postgres/tests/unit/db/test_schema.py` の検証ロジックを書き、期待スキーマと実 DB が一致しないため落ちることを確認。
 - Green: 5 ファイルのマイグレーションを順に追加し、各段階で対応するテストが緑になることを確認。
 - Refactor: マイグレーションヘルパ（共通の ENUM 作成関数等）を抽出。
 

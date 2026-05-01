@@ -15,7 +15,7 @@ last_updated: 2026-05-01
 
 | 範囲 | パス |
 |---|---|
-| Next.js App Router 配下のページ | `ui/app/{balances,categories,portfolio,rules}/page.tsx` 等 |
+| Next.js App Router 配下のページ | `ui/src/app/{balances,categories,portfolio,rules}/page.tsx` 等 |
 | 共通レイアウト・状態コンポーネント | `ui/components/{layout,feedback,charts,tables,rules,portfolio}/` |
 | API クライアント・型生成 | `ui/lib/api/`, `ui/lib/query/` |
 | ロジック（構成比計算など） | `ui/lib/portfolio/` |

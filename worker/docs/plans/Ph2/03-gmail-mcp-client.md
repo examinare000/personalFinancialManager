@@ -50,9 +50,9 @@ last_updated: 2026-05-01
 | `worker/src/kakeibo_worker/adapters/gmail/__init__.py` | パッケージ初期化 |
 | `worker/src/kakeibo_worker/adapters/gmail/client.py` | OAuth トークン読込 + Gmail API 呼出 |
 | `worker/src/kakeibo_worker/adapters/gmail/auth.py` | リフレッシュトークン → アクセストークン変換、ログマスキング |
-| `tests/unit/adapters/gmail/test_client.py` | API レスポンスをモックして `RawMail` 正規化検証 |
-| `tests/unit/adapters/gmail/test_auth.py` | トークンマスキング検証（ログキャプチャ） |
-| `tests/fixtures/gmail/sample_message.json` | Gmail API `users.messages.get` レスポンスの fixture |
+| `worker/tests/unit/adapters/gmail/test_client.py` | API レスポンスをモックして `RawMail` 正規化検証 |
+| `worker/tests/unit/adapters/gmail/test_auth.py` | トークンマスキング検証（ログキャプチャ） |
+| `tests/fixtures/gmail/sample_message.json` | Gmail API `users.messages.get` レスポンスの fixture（横断 fixture） |
 
 ## 実装方針
 
@@ -68,14 +68,14 @@ last_updated: 2026-05-01
 ### 1. Red
 
 - `tests/fixtures/gmail/sample_message.json` を Gmail API `users.messages.get` のサンプル形式で作成（合成。実メールデータは入れない）。
-- `tests/unit/adapters/gmail/test_client.py`：
+- `worker/tests/unit/adapters/gmail/test_client.py`：
   - `client.list_messages(query="...")` がメッセージ ID リストを返す（HTTP モック）
   - `client.get_message(msg_id)` が `RawMail` を返す
   - スコープ違反のクライアントを inject すると `ValueError`
-- `tests/unit/adapters/gmail/test_auth.py`：
+- `worker/tests/unit/adapters/gmail/test_auth.py`：
   - リフレッシュトークン JSON 読込でトークン値が `caplog` に含まれない
   - 期限切れトークンで `RuntimeError`
-- `tests/unit/domain/test_raw_mail.py` で `RawMail` バリデーション。
+- `worker/tests/unit/domain/test_raw_mail.py` で `RawMail` バリデーション。
 
 ### 2. Green
 
@@ -101,9 +101,9 @@ last_updated: 2026-05-01
 ## 品質ゲート
 
 ```bash
-pytest tests/unit/adapters/gmail/ tests/unit/domain/test_raw_mail.py
-ruff check .
-pyright
+docker compose run --rm worker pytest worker/tests/unit/adapters/gmail/ worker/tests/unit/domain/test_raw_mail.py
+docker compose run --rm worker ruff check .
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
@@ -125,8 +125,8 @@ Phase 2.3 Gmail 読み取り専用クライアントを実装。
 ## 成果物
 - shared/kakeibo_shared/domain/raw_mail.py
 - worker/src/kakeibo_worker/adapters/gmail/{client,auth}.py
-- tests/unit/{domain/test_raw_mail.py, adapters/gmail/}
-- tests/fixtures/gmail/sample_message.json
+- worker/tests/unit/{domain/test_raw_mail.py, adapters/gmail/}
+- tests/fixtures/gmail/sample_message.json（横断 fixture）
 - pyproject.toml（mail extras 拡張）
 
 ## 検証結果

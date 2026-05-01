@@ -39,7 +39,7 @@ Phase 3 で本サービスに本格着手するときの起点：
 
 - 原典: `docs/plans/01-development-plan.md` §4.3 Phase 3.1 Flask REST API
 - ブランチ: `feature/flask-rest-api`
-- Phase 2 で作成された `RawMail`, メールパーサ群, PayPal Adapter, Watcher が `src/kakeibo/` 配下に揃う想定なので、API は **既存ロジックを呼び出すだけ** の薄いレイヤとして実装可能になる
+- Phase 2 で作成された `RawMail`（`shared/kakeibo_shared/domain/raw_mail.py`）、メールパーサ群（`worker/src/kakeibo_worker/adapters/mail/`）、PayPal Adapter（`worker/src/kakeibo_worker/adapters/paypal.py`）、Watcher（`worker/src/kakeibo_worker/ingest/`）が揃う想定なので、API は共通ドメイン型と薄い repository 層を介して **既存ロジックを呼び出すだけ** のレイヤとして実装可能になる
 - 想定エンドポイント: `GET /api/transactions`（Phase 2 で投入された取引も返却対象）
 
 Phase 3.1 着手時に `api/docs/plans/Ph3/01-flask-rest-api.md` を新設する。

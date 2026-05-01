@@ -41,25 +41,32 @@ Phase2 は **すべて `worker` サービスに集約** される。Phase1 で�
 
 ## 3. サブディレクトリ構成
 
+ADR-014（per-service source layout）により Phase2 タスク指示書も `<service>/docs/plans/Ph2/` に同梱する。
+
 ```
-docs/plans/
-├── 12-phase2-service-assignments.md  # 本ファイル（Phase2 振り分け）
-├── postgres/Ph2/
-│   └── README.md                      # 担当タスクなし
-├── worker/Ph2/
-│   ├── README.md                      # worker サービス Phase2 一覧
-│   ├── 01-watcher-service.md          # Phase 2.1
-│   ├── 02-archive-and-dead-letter.md  # Phase 2.2
-│   ├── 03-gmail-mcp-client.md         # Phase 2.3
-│   ├── 04-parser-amazon-mail.md       # Phase 2.4
-│   ├── 05-parser-rakuten-mail.md      # Phase 2.5
-│   ├── 06-parser-yahoo-mail.md        # Phase 2.6
-│   ├── 07-adapter-paypal-api.md       # Phase 2.7
-│   └── 08-cron-batch-runner.md        # Phase 2.8
-├── api/Ph2/
-│   └── README.md                      # 担当タスクなし
-└── ui/Ph2/
-    └── README.md                      # 担当タスクなし
+.
+├── docs/plans/
+│   └── 12-phase2-service-assignments.md  # 本ファイル（Phase2 振り分け）
+│
+├── postgres/docs/plans/Ph2/
+│   └── README.md                          # 担当タスクなし
+│
+├── worker/docs/plans/Ph2/
+│   ├── README.md                          # worker サービス Phase2 一覧
+│   ├── 01-watcher-service.md              # Phase 2.1
+│   ├── 02-archive-and-dead-letter.md      # Phase 2.2
+│   ├── 03-gmail-mcp-client.md             # Phase 2.3
+│   ├── 04-parser-amazon-mail.md           # Phase 2.4
+│   ├── 05-parser-rakuten-mail.md          # Phase 2.5
+│   ├── 06-parser-yahoo-mail.md            # Phase 2.6
+│   ├── 07-adapter-paypal-api.md           # Phase 2.7
+│   └── 08-cron-batch-runner.md            # Phase 2.8
+│
+├── api/docs/plans/Ph2/
+│   └── README.md                          # 担当タスクなし
+│
+└── ui/docs/plans/Ph2/
+    └── README.md                          # 担当タスクなし
 ```
 
 Phase2 の **原典は `docs/plans/01-development-plan.md` §4.2** のみ（Phase1 のような独立詳細プランファイル `12-phase2-*.md` は **作らない方針**：原典が必要十分に簡潔で、サービス別指示書だけで Coder が着手できるため）。原典との乖離時は原典優先。
@@ -96,14 +103,14 @@ Phase2 の **原典は `docs/plans/01-development-plan.md` §4.2** のみ（Phas
 
 | 連番 | 担当タスク | 指示書 | 原典（行範囲） | ブランチ | 優先度 |
 |---|---|---|---|---|---|
-| 01 | Phase 2.1 watchdog Watcher サービス | [`worker/Ph2/01-watcher-service.md`](./worker/Ph2/01-watcher-service.md) | §4.2 L211-221 | `feature/watcher-service` | 🔴 高 |
-| 02 | Phase 2.2 アーカイブ移動 + dead letter | [`worker/Ph2/02-archive-and-dead-letter.md`](./worker/Ph2/02-archive-and-dead-letter.md) | §4.2 L223-233 | `feature/archive-and-dead-letter` | 🟠 中 |
-| 03 | Phase 2.3 Gmail MCP 接続 | [`worker/Ph2/03-gmail-mcp-client.md`](./worker/Ph2/03-gmail-mcp-client.md) | §4.2 L235-245 | `feature/gmail-mcp-client` | 🔴 高 |
-| 04 | Phase 2.4 Amazon メールパーサ | [`worker/Ph2/04-parser-amazon-mail.md`](./worker/Ph2/04-parser-amazon-mail.md) | §4.2 L247-257 | `feature/parser-amazon-mail` | 🟡 中 |
-| 05 | Phase 2.5 楽天市場 メールパーサ | [`worker/Ph2/05-parser-rakuten-mail.md`](./worker/Ph2/05-parser-rakuten-mail.md) | §4.2 L259-269 | `feature/parser-rakuten-mail` | 🟡 中 |
-| 06 | Phase 2.6 Yahoo!ショッピング メールパーサ | [`worker/Ph2/06-parser-yahoo-mail.md`](./worker/Ph2/06-parser-yahoo-mail.md) | §4.2 L271-281 | `feature/parser-yahoo-mail` | 🟡 中 |
-| 07 | Phase 2.7 PayPal API クライアント | [`worker/Ph2/07-adapter-paypal-api.md`](./worker/Ph2/07-adapter-paypal-api.md) | §4.2 L283-293 | `feature/adapter-paypal-api` | 🔴 高 |
-| 08 | Phase 2.8 cron バッチ運用化 | [`worker/Ph2/08-cron-batch-runner.md`](./worker/Ph2/08-cron-batch-runner.md) | §4.2 L295-305 | `feature/cron-batch-runner` | 🟠 中 |
+| 01 | Phase 2.1 watchdog Watcher サービス | [`worker/Ph2/01-watcher-service.md`](../../worker/docs/plans/Ph2/01-watcher-service.md) | §4.2 L211-221 | `feature/watcher-service` | 🔴 高 |
+| 02 | Phase 2.2 アーカイブ移動 + dead letter | [`worker/Ph2/02-archive-and-dead-letter.md`](../../worker/docs/plans/Ph2/02-archive-and-dead-letter.md) | §4.2 L223-233 | `feature/archive-and-dead-letter` | 🟠 中 |
+| 03 | Phase 2.3 Gmail MCP 接続 | [`worker/Ph2/03-gmail-mcp-client.md`](../../worker/docs/plans/Ph2/03-gmail-mcp-client.md) | §4.2 L235-245 | `feature/gmail-mcp-client` | 🔴 高 |
+| 04 | Phase 2.4 Amazon メールパーサ | [`worker/Ph2/04-parser-amazon-mail.md`](../../worker/docs/plans/Ph2/04-parser-amazon-mail.md) | §4.2 L247-257 | `feature/parser-amazon-mail` | 🟡 中 |
+| 05 | Phase 2.5 楽天市場 メールパーサ | [`worker/Ph2/05-parser-rakuten-mail.md`](../../worker/docs/plans/Ph2/05-parser-rakuten-mail.md) | §4.2 L259-269 | `feature/parser-rakuten-mail` | 🟡 中 |
+| 06 | Phase 2.6 Yahoo!ショッピング メールパーサ | [`worker/Ph2/06-parser-yahoo-mail.md`](../../worker/docs/plans/Ph2/06-parser-yahoo-mail.md) | §4.2 L271-281 | `feature/parser-yahoo-mail` | 🟡 中 |
+| 07 | Phase 2.7 PayPal API クライアント | [`worker/Ph2/07-adapter-paypal-api.md`](../../worker/docs/plans/Ph2/07-adapter-paypal-api.md) | §4.2 L283-293 | `feature/adapter-paypal-api` | 🔴 高 |
+| 08 | Phase 2.8 cron バッチ運用化 | [`worker/Ph2/08-cron-batch-runner.md`](../../worker/docs/plans/Ph2/08-cron-batch-runner.md) | §4.2 L295-305 | `feature/cron-batch-runner` | 🟠 中 |
 
 ## 6. 依存関係図
 
@@ -160,7 +167,7 @@ worker/Ph2/07 (PayPal API)
 
 | 項目 | 内容 |
 |---|---|
-| Phase1 完了 | `worker/Ph1/05` (取込CLI) と `postgres/Ph1/01` (スキーマ) が緑であること |
+| Phase1 完了 | `worker/Ph1/07` (取込CLI) と `postgres/Ph1/02` (スキーマ) が緑であること |
 | Docker secret | `secrets/{gmail_oauth_token.json, paypal_api_secret.txt}` が運用環境に配置済（開発時は `.example` ベース） |
 | 環境変数 | `INBOX_PATH=/inbox`, `ARCHIVE_PATH=/archive`, `DEAD_LETTER_PATH=/dead_letter`, `GMAIL_OAUTH_TOKEN_FILE`, `PAYPAL_API_SECRET_FILE` は `compose.yml` で宣言済み |
 | 依存パッケージ | `pyproject.toml` `[project.optional-dependencies].mail`（mail-parser, beautifulsoup4, lxml）を `--extra mail` で導入 |

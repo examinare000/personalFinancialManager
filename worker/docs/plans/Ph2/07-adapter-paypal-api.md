@@ -50,7 +50,7 @@ last_updated: 2026-05-01
 | `worker/src/kakeibo_worker/adapters/_http.py` | 指数バックオフ付き HTTP クライアントヘルパ（PayPal 専用 or 汎用） |
 | `tests/fixtures/paypal/sample_transaction_response.json` | PayPal API レスポンスの fixture |
 | `tests/fixtures/paypal/rate_limit_response.json` | HTTP 429 レスポンス fixture |
-| `tests/unit/adapters/test_paypal.py` | API モック + レート制限リトライ + 冪等性 |
+| `worker/tests/unit/adapters/test_paypal.py` | API モック + レート制限リトライ + 冪等性 |
 
 ## 実装方針
 
@@ -78,7 +78,7 @@ last_updated: 2026-05-01
 
 - `tests/fixtures/paypal/sample_transaction_response.json` を Sandbox の実フォーマットに合わせて合成（実取引情報は禁止）。
 - `tests/fixtures/paypal/rate_limit_response.json` で HTTP 429 + `Retry-After: 1` 形式。
-- `tests/unit/adapters/test_paypal.py`：
+- `worker/tests/unit/adapters/test_paypal.py`：
   - 正常系: モック HTTP で 200 → `Transaction` リスト返却
   - レート制限: 1 回目 429 → 2 回目 200、ハンドリングが期待通り（スリープモック）
   - レート制限が 4 回連続で `AdapterError`
@@ -108,9 +108,9 @@ last_updated: 2026-05-01
 ## 品質ゲート
 
 ```bash
-pytest tests/unit/adapters/test_paypal.py
-ruff check .
-pyright
+docker compose run --rm worker pytest worker/tests/unit/adapters/test_paypal.py
+docker compose run --rm worker ruff check .
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
@@ -133,7 +133,7 @@ Phase 2.7 PayPal Transactions API クライアントを実装。
 - worker/src/kakeibo_worker/adapters/paypal.py
 - worker/src/kakeibo_worker/adapters/_http.py
 - tests/fixtures/paypal/{sample_transaction_response,rate_limit_response}.json
-- tests/unit/adapters/test_paypal.py
+- worker/tests/unit/adapters/test_paypal.py
 
 ## 検証結果
 - 全件緑（モック含む）

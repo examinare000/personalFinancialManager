@@ -19,7 +19,7 @@ last_updated: 2026-05-01
 
 ## 担当サービス
 
-`compose.yml` `ui` サービス。`ui/app/balances/` に残高ページを追加し、期間フィルタ + 折れ線グラフ + 空状態 UI を実装する。
+`compose.yml` `ui` サービス。`ui/src/app/balances/` に残高ページを追加し、期間フィルタ + 折れ線グラフ + 空状態 UI を実装する。
 
 ## 上流・下流
 
@@ -45,9 +45,9 @@ last_updated: 2026-05-01
 | `ui/lib/api/balances.ts` | `useMonthlyBalances({from, to})` フック（react-query） |
 | `ui/components/charts/MonthlyTrendChart.tsx` | recharts `LineChart`（Client Component） |
 | `ui/components/charts/PeriodFilter.tsx` | 直近12か月 / 全期間 / カスタム |
-| `ui/app/balances/page.tsx` | 残高ページ（ヘッダ + フィルタ + チャート） |
+| `ui/src/app/balances/page.tsx` | 残高ページ（ヘッダ + フィルタ + チャート） |
 | `ui/components/charts/__tests__/MonthlyTrendChart.test.tsx` | Render + 空状態 + データ反映 |
-| `ui/app/balances/__tests__/page.test.tsx` | MSW モックでの統合 Render |
+| `ui/src/app/balances/__tests__/page.test.tsx` | MSW モックでの統合 Render |
 
 ## 実装方針
 
@@ -76,7 +76,7 @@ last_updated: 2026-05-01
 1. `ui/lib/api/balances.ts` で `useMonthlyBalances` フック実装（react-query + fetch ラッパ）
 2. `ui/components/charts/MonthlyTrendChart.tsx` で recharts `LineChart` 実装、`"use client"`
 3. `ui/components/charts/PeriodFilter.tsx` で期間選択 UI
-4. `ui/app/balances/page.tsx` でフィルタ + チャート統合、`searchParams` 連携
+4. `ui/src/app/balances/page.tsx` でフィルタ + チャート統合、`searchParams` 連携
 
 ### 3. Refactor
 
@@ -124,7 +124,7 @@ Phase 3.3 月次推移グラフを実装。
 ## 成果物
 - ui/lib/api/balances.ts
 - ui/components/charts/{MonthlyTrendChart,PeriodFilter}.tsx
-- ui/app/balances/page.tsx
+- ui/src/app/balances/page.tsx
 - 各 __tests__/
 
 ## 検証結果

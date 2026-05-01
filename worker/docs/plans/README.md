@@ -18,7 +18,7 @@ last_updated: 2026-05-01
 | 取込アダプタ抽象基底 | `worker/src/kakeibo_worker/adapters/base.py`, `errors.py` |
 | MUFG / SMBC CSV 機関別アダプタ | `worker/src/kakeibo_worker/adapters/mufg.py`, `smbc.py` |
 | 取込 CLI（`python -m kakeibo_worker.ingest`） | `worker/src/kakeibo_worker/ingest/cli.py`, `registry.py`, `persister.py` |
-| 取込パイプライン全般のユニットテスト | `worker/tests/unit/{domain,adapters,ingest}/`（移行先） |
+| 取込パイプライン全般のユニットテスト | `worker/tests/unit/{domain,adapters,ingest}/` |
 | watchdog Watcher / メールパーサ / PayPal API（Phase 2） | `worker/src/kakeibo_worker/` |
 | LLM カテゴリ分類（Phase 4） | `worker/src/kakeibo_worker/categorization/` |
 
@@ -82,9 +82,9 @@ worker/Ph1/04 ┬─→ worker/Ph1/05 ┐
 各タスク完了時：
 
 ```bash
-pytest tests/                        # 該当範囲が全件緑
-ruff check .                         # 違反ゼロ
-pyright                              # 警告ゼロ
+docker compose run --rm worker pytest worker/tests/   # 該当範囲が全件緑
+docker compose run --rm worker ruff check .           # 違反ゼロ
+docker compose run --rm worker pyright                # 警告ゼロ
 ```
 
 統合確認（`worker/Ph1/07` 完了後）：

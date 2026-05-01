@@ -74,7 +74,7 @@ sequenceDiagram
 #### 3.1.1 watchdog 設定
 
 ```python
-# worker/watcher.py
+# worker/src/kakeibo_worker/ingest/watcher.py
 from pathlib import Path
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
@@ -212,6 +212,8 @@ CREATE TABLE worker_state (
 INSERT INTO worker_state (key, value) VALUES ('paypal.last_run', '2026-04-29T23:30:00Z');
 ```
 
+スキーマ本体は ADR-014 に従い `postgres/src/alembic/versions/` 配下のマイグレーションで管理する（worker サービスからは Raw SQL で読み書きするのみ）。
+
 PayPal Transactions API は最大31日前までの遡及が可能。日次で十分な範囲。
 
 ### 3.4 手動入力UI
@@ -288,7 +290,7 @@ flowchart LR
 ### 5.2 リトライ戦略
 
 ```python
-# worker/retry.py
+# worker/src/kakeibo_worker/retry.py
 import time
 import random
 
@@ -348,12 +350,12 @@ cron 設定は worker コンテナ内で `cron` または `supervisor` で管理
 
 ```cron
 # worker/crontab
-0 23 * * * /usr/local/bin/python -m worker.tasks.fetch_mail
-30 23 * * * /usr/local/bin/python -m worker.tasks.fetch_paypal
-45 23 * * * /usr/local/bin/python -m worker.tasks.reconcile
-30 0 * * * /usr/local/bin/python -m worker.tasks.classify_unclassified
-0 4 * * 0 /usr/local/bin/python -m worker.tasks.verify_balance
-0 3 1 * * /usr/local/bin/python -m tools.export_obsidian --month $(date -d 'last month' +\%Y-\%m)
+0 23 * * * /usr/local/bin/python -m kakeibo_worker.tasks.fetch_mail
+30 23 * * * /usr/local/bin/python -m kakeibo_worker.tasks.fetch_paypal
+45 23 * * * /usr/local/bin/python -m kakeibo_worker.tasks.reconcile
+30 0 * * * /usr/local/bin/python -m kakeibo_worker.tasks.classify_unclassified
+0 4 * * 0 /usr/local/bin/python -m kakeibo_worker.tasks.verify_balance
+0 3 1 * * /usr/local/bin/python -m kakeibo_worker.tools.export_obsidian --month $(date -d 'last month' +\%Y-\%m)
 ```
 
 ## 7. 取込のアトミック性

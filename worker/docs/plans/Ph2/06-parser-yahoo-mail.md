@@ -44,7 +44,7 @@ last_updated: 2026-05-01
 | `tests/fixtures/mail/yahoo/normal.eml` | PayPay ポイントなし合成メール |
 | `tests/fixtures/mail/yahoo/with_paypay_points.eml` | PayPay ポイント利用あり |
 | `tests/fixtures/mail/yahoo/expected.json` | 期待 Transaction 配列 |
-| `tests/unit/adapters/mail/test_yahoo.py` | ゴールデンマスタ + PayPay ポイント + ハッシュ決定性 |
+| `worker/tests/unit/adapters/mail/test_yahoo.py` | ゴールデンマスタ + PayPay ポイント + ハッシュ決定性 |
 
 ## 実装方針
 
@@ -69,7 +69,7 @@ last_updated: 2026-05-01
 
 - `tests/fixtures/mail/yahoo/{normal,with_paypay_points}.eml` を合成。
 - `tests/fixtures/mail/yahoo/expected.json` に期待値。
-- `tests/unit/adapters/mail/test_yahoo.py`：
+- `worker/tests/unit/adapters/mail/test_yahoo.py`：
   - ポイントなし: `raw_payload["paypay_points_used"] == "0"`
   - ポイントあり: `raw_payload["paypay_points_used"] == "<利用額>"`
   - 同一メール 2 回でハッシュ一致
@@ -94,9 +94,9 @@ last_updated: 2026-05-01
 ## 品質ゲート
 
 ```bash
-pytest tests/unit/adapters/mail/test_yahoo.py
-ruff check .
-pyright
+docker compose run --rm worker pytest worker/tests/unit/adapters/mail/test_yahoo.py
+docker compose run --rm worker ruff check .
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
@@ -117,7 +117,7 @@ Phase 2.6 Yahoo!ショッピング 注文確認メールパーサを実装。
 - worker/src/kakeibo_worker/adapters/mail/yahoo.py
 - tests/fixtures/mail/yahoo/{normal,with_paypay_points}.eml
 - tests/fixtures/mail/yahoo/expected.json
-- tests/unit/adapters/mail/test_yahoo.py
+- worker/tests/unit/adapters/mail/test_yahoo.py
 
 ## 検証結果
 - 全件緑（2 パターン）

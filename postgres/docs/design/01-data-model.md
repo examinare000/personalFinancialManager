@@ -343,7 +343,7 @@ GROUP BY h.symbol_kind;
 ## 9. マイグレーション運用方針
 
 - ツール: Alembic（SQLAlchemy が依存上含まれる前提）。Phase 1 で導入。
-- 命名: `YYYYMMDD_HHMM_<short_description>.py`
+- 命名: Alembic 既定の `<rev>_<short>.py`（`alembic revision -m "<short>"` 実行で自動採番）。
 - ロールバック: 全マイグレーションに `downgrade()` を実装。データ破壊的変更は別マイグレーションへ分離。
 - データ移行: スキーマ変更とデータ移行を同一マイグレーションに含めない（コミット粒度の原則と一致）。
 - `raw_payload` の互換性: パーサ改修時はマイグレーションでなく、ワーカ側でのリプレイスクリプトで処理する。スキーマ自体は不変。
@@ -352,5 +352,5 @@ GROUP BY h.symbol_kind;
 
 - 為替レートテーブル（`fx_rates`）は将来追加。現状はJPYのみ前提。
 - 口座番号の暗号化方式（pgcrypto等）は §10 セキュリティ設計で確定後に追加。
-- `categories` の初期データ（マスタ）は `db/seeds/categories.sql` に分離して投入する想定。
+- `categories` の初期データ（マスタ）は `postgres/src/sql/seeds/categories.sql` に分離して投入する想定（ADR-014 の per-service レイアウトに従う）。
 - LLM 分類時の `category_confidence` 閾値（自動採用 vs 未分類保留）は `worker/docs/design/03-categorization-engine.md` で定義。

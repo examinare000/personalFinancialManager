@@ -51,13 +51,13 @@ last_updated: 2026-04-30
 
 ## 依存タスク
 
-- `05-phase1-mufg-csv-adapter.md`（Phase 1.4 MUFG CSV アダプタ）。
-- `06-phase1-smbc-csv-adapter.md`（Phase 1.5 SMBC CSV アダプタ）。
+- `worker/docs/plans/Ph1/05-mufg-csv-adapter.md`（Phase 1.4 MUFG CSV アダプタ）。
+- `worker/docs/plans/Ph1/06-smbc-csv-adapter.md`（Phase 1.5 SMBC CSV アダプタ）。
 
 ## 後続タスク
 
-- `08-phase1-hash-idempotency-tests.md`（Phase 1.7 ハッシュ冪等性ユニットテスト強化）。
-- `09-phase1-monthly-summary-sql.md`（Phase 1.8 月次サマリ SQL: 本 CLI で投入したデータを集計）。
+- `worker/docs/plans/Ph1/08-hash-idempotency-tests.md`（Phase 1.7 ハッシュ冪等性ユニットテスト強化）。
+- `postgres/docs/plans/Ph1/09-monthly-summary-sql.md`（Phase 1.8 月次サマリ SQL: 本 CLI で投入したデータを集計）。
 - Phase 2.1 Watcher（本プラン群の対象外、`01-development-plan.md` §4.2 で扱う）。
 
 ## 対象ファイル/モジュール
@@ -68,8 +68,8 @@ last_updated: 2026-04-30
 | `worker/src/kakeibo_worker/ingest/cli.py` | CLI エントリ。`if __name__ == "__main__": ...` を含む |
 | `worker/src/kakeibo_worker/ingest/registry.py` | 機関 → アダプタクラスのレジストリ |
 | `worker/src/kakeibo_worker/ingest/persister.py` | DB 永続化（`ON CONFLICT (hash) DO NOTHING`） |
-| `tests/unit/ingest/test_cli.py` | CLI 引数 / 終了コード / dry-run テスト |
-| `tests/unit/ingest/test_persister.py` | 冪等 INSERT 検証（実 Postgres or テスト用 DB） |
+| `worker/tests/unit/ingest/test_cli.py` | CLI 引数 / 終了コード / dry-run テスト |
+| `worker/tests/unit/ingest/test_persister.py` | 冪等 INSERT 検証（実 Postgres or テスト用 DB） |
 
 ## 実装方針
 
@@ -80,7 +80,7 @@ last_updated: 2026-04-30
 5. **dry-run**: `--dry-run` 指定時は `persister.persist(...)` をスキップし、`len(transactions)` と先頭 3 件を `print` する。
 6. **終了コード**: `click` の例外ハンドリングで `EncodingMismatchError` / `ColumnMissingError` → exit 3、`psycopg.Error` → exit 4、その他 `SystemExit(2)` は引数不正。
 7. **ログ**: `logging.getLogger("kakeibo_worker.ingest")` を使用し、構造化ログ（INFO で件数、WARNING で重複スキップ件数）。
-8. **テストでの DB**: dev 依存に宣言済みの `testcontainers`（pyproject.toml `[project.optional-dependencies].dev`）または既存 `tests/_compose_utils.py` を活用し、テストごとに一時 DB を立ち上げて Phase 1.1 のマイグレーションを適用。`pytest-postgresql` は dev 依存に未宣言のため採用しない。
+8. **テストでの DB**: dev 依存に宣言済みの `testcontainers`（shared/pyproject.toml `[project.optional-dependencies].dev`）または既存 `tests/_compose_utils.py`（リポジトリルートの横断ユーティリティ）を活用し、テストごとに一時 DB を立ち上げて Phase 1.1 のマイグレーションを適用。`pytest-postgresql` は dev 依存に未宣言のため採用しない。
 
 ## 受入条件
 
@@ -104,7 +104,7 @@ last_updated: 2026-04-30
 
 ### TDD アプローチ
 
-- Red: `tests/unit/ingest/test_cli.py` で `CliRunner` ベースのテストを書き、CLI 未実装で落とす。
+- Red: `worker/tests/unit/ingest/test_cli.py` で `CliRunner` ベースのテストを書き、CLI 未実装で落とす。
 - Green: `cli.py` を最小実装（成功パスのみ）→ 冪等性 → エラーパスの順に実装。
 - Refactor: 永続化ロジックを `persister.py` に切り出し、CLI は引数解釈に専念。
 

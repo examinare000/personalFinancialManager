@@ -132,7 +132,7 @@ git checkout -b feature/flask-rest-api
 
 ### 1. Red: テストを先に書く
 
-`tests/unit/api/conftest.py` で Flask test client + auth bypass fixture を用意。各エンドポイントに以下を記述：
+`api/tests/unit/conftest.py` で Flask test client + auth bypass fixture を用意。各エンドポイントに以下を記述：
 
 - `test_get_transactions_returns_paginated_list()`：50 件以下、`{data, meta: {total,page,limit}}` 構造
 - `test_get_transactions_filters_by_date_range()`：`?from=&to=` でフィルタ
@@ -145,13 +145,13 @@ git checkout -b feature/flask-rest-api
 - `test_settings_auth_bypass_default_is_false()`：本番安全性確認
 - `test_openapi_endpoint_returns_valid_spec()`：`paths` / `components.schemas` を含む
 
-`tests/integration/api/test_crud_e2e.py` で testcontainers + `worker/Ph1/05` の取込CLIフィクスチャを使い、`POST /api/categories` → `GET` で永続化確認。
+`api/tests/integration/test_crud_e2e.py` で testcontainers + `worker/docs/plans/Ph1/07-ingest-cli.md` の取込CLIフィクスチャを使い、`POST /api/categories` → `GET` で永続化確認。
 
-`pytest tests/unit/api/ tests/integration/api/` で全件赤を確認。
+`docker compose run --rm worker pytest api/tests/` で全件赤を確認。
 
 ### 2. Green: 最小実装で順に通す
 
-1. `pyproject.toml` に `flask-smorest`, `marshmallow` 追加 → `uv sync`
+1. `shared/pyproject.toml` の `[project.optional-dependencies].api` に `flask-smorest`, `marshmallow` 追加 → `docker compose build api worker`（uv が再ロックして両コンテナへ展開）
 2. `shared/kakeibo_shared/config.py` に `auth_bypass` 追加（既存テストを破壊しないよう既定値 `False`、`__repr__` のマスク非対象）
 3. `api/src/kakeibo_api/openapi.py` で `flask_smorest.Api` インスタンス生成
 4. `api/src/kakeibo_api/auth.py` で `before_request` ハンドラを実装（bypass フラグ読み取り）
@@ -179,15 +179,15 @@ git checkout -b feature/flask-rest-api
 - レスポンスに `transactions.raw_payload` が含まれない
 - ページネーション既定 `limit=100`、上限 `limit=1000` を超えるリクエストで 422
 - `pyright` クリーン、`ruff` 違反ゼロ
-- 既存テスト（`tests/unit/test_settings_repr.py` 等）が緑のまま
+- 既存テスト（`worker/tests/unit/test_settings_repr.py` 等）が緑のまま
 
 ## 品質ゲート
 
 ```bash
-pytest tests/unit/api/ tests/integration/api/
-pytest tests/unit/test_settings_repr.py  # 既存破壊チェック
-ruff check .
-pyright
+docker compose run --rm worker pytest api/tests/
+docker compose run --rm worker pytest worker/tests/unit/test_settings_repr.py  # 既存破壊チェック
+docker compose run --rm worker ruff check api/ shared/
+docker compose run --rm worker pyright
 ```
 
 ## ブランチ・コミット規約
