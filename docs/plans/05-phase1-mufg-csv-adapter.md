@@ -14,7 +14,7 @@ last_updated: 2026-04-30
 
 三菱UFJ銀行（MUFG）の **Shift_JIS CSV** を `Transaction` に正規化する `MufgCsvAdapter` を実装する。`IngestAdapter` 契約（Phase 1.3）に準拠し、ゴールデンマスタテストで決定的な抽出結果を保証する。Phase1 のクリティカルパス上で、Phase 1.6 取込CLI が依存する。
 
-参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.4, §3.1 完了条件 (b)（冪等性）, `docs/design/02-ingest-adapters.md`, リスク R-08（文字コード固定）。
+参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.4, §3.1 完了条件 (b)（冪等性）, `worker/docs/design/02-ingest-adapters.md`, リスク R-08（文字コード固定）。
 
 ## 目的・背景
 

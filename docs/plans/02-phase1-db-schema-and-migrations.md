@@ -14,7 +14,7 @@ last_updated: 2026-04-30
 
 `docs/plans/00-initial-design.md` §4.2 の DDL を Alembic マイグレーションへ落とし込み、PostgreSQL 16 上で **冪等に適用できる初期スキーマ基盤**を整備する。Phase1 のすべての後続タスク（共通型、アダプタ、取込CLI、月次サマリ SQL）が依存する土台であり、Phase1 完了条件 (a)「`alembic upgrade head` が冪等に実行できる」を直接満たす。
 
-参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.1, §3.1 完了条件 (a), `docs/design/01-data-model.md`。
+参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.1, §3.1 完了条件 (a), `postgres/docs/design/01-data-model.md`。
 
 ## 目的・背景
 

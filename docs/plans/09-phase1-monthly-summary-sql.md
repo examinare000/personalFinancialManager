@@ -14,7 +14,7 @@ last_updated: 2026-04-30
 
 Phase1 完了条件 (c)「SQL で月次サマリが手計算と一致」を満たす集計クエリを `sql/queries/monthly_summary.sql` として配置する。サンプルデータを投入してテストから呼び出し、Excel 等での手計算結果と完全一致することを保証する。
 
-参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.8, §3.1 完了条件 (c), `docs/design/01-data-model.md`。
+参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.8, §3.1 完了条件 (c), `postgres/docs/design/01-data-model.md`。
 
 ## 目的・背景
 
