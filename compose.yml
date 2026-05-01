@@ -121,9 +121,9 @@ services:
   caddy:
     image: caddy:2-alpine
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./caddy_data:/data
-      - ./caddy_config:/config
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/data:/data
+      - ./caddy/config:/config
     networks: [external]
     ports:
       - "127.0.0.1:8443:443"

@@ -51,8 +51,8 @@ inbox/
 archive/
 dead_letter/
 backup/
-caddy_data/
-caddy_config/
+caddy/data/
+caddy/config/
 
 # ビルド成果物
 dist/
