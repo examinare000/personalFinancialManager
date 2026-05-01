@@ -3,7 +3,7 @@
 ## 現状
 api サービス専有の詳細設計は **存在しない**。Phase 3 以降で追加予定。
 
-Phase 3 実装計画は `../../../docs/plans/api/Ph3/README.md` を参照。
+Phase 3 実装計画は `../../../docs/plans/api/Ph3/README.md`（別ブランチで追加予定）を参照。
 
 ## 横断設計（root）
 - `../../../docs/design/00-overview.md`
