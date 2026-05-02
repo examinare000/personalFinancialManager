@@ -1,0 +1,101 @@
+{
+  "account_id": 100,
+  "transactions": [
+    {
+      "occurred_on": "2026-04-01",
+      "occurred_at": null,
+      "amount": "-500",
+      "currency": "JPY",
+      "description": "コンビニ",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "日付": "2026/04/01",
+        "摘要": "コンビニ",
+        "お支払金額": "500",
+        "お預り金額": "",
+        "差引残高": "999,500"
+      }
+    },
+    {
+      "occurred_on": "2026-04-03",
+      "occurred_at": null,
+      "amount": "300000",
+      "currency": "JPY",
+      "description": "給与振込",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "日付": "2026/04/03",
+        "摘要": "給与振込",
+        "お支払金額": "",
+        "お預り金額": "300,000",
+        "差引残高": "1,299,500"
+      }
+    },
+    {
+      "occurred_on": "2026-04-05",
+      "occurred_at": null,
+      "amount": "-2500",
+      "currency": "JPY",
+      "description": "スーパー",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "日付": "2026/04/05",
+        "摘要": "スーパー",
+        "お支払金額": "2,500",
+        "お預り金額": "",
+        "差引残高": "1,297,000"
+      }
+    },
+    {
+      "occurred_on": "2026-04-07",
+      "occurred_at": null,
+      "amount": "-10000",
+      "currency": "JPY",
+      "description": "引出ATM",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "日付": "2026/04/07",
+        "摘要": "引出ATM",
+        "お支払金額": "10,000",
+        "お預り金額": "",
+        "差引残高": "1,287,000"
+      }
+    },
+    {
+      "occurred_on": "2026-04-10",
+      "occurred_at": null,
+      "amount": "123",
+      "currency": "JPY",
+      "description": "利息",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "日付": "2026/04/10",
+        "摘要": "利息",
+        "お支払金額": "",
+        "お預り金額": "123",
+        "差引残高": "1,287,123"
+      }
+    },
+    {
+      "occurred_on": "2026-04-15",
+      "occurred_at": null,
+      "amount": "-8500",
+      "currency": "JPY",
+      "description": "公共料金 電気",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "日付": "2026/04/15",
+        "摘要": "公共料金 電気",
+        "お支払金額": "8,500",
+        "お預り金額": "",
+        "差引残高": "1,278,623"
+      }
+    }
+  ]
+}
