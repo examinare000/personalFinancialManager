@@ -13,6 +13,11 @@
 - DB アクセスは ``psycopg`` を直接使う。SQLAlchemy 例外ラップを介さないため、
   ``psycopg.errors.UniqueViolation`` 等の具体例外型を ``pytest.raises`` で素直に
   捕捉できる（planner レポート §4.2 と整合）。
+- alembic.ini の ``script_location = alembic`` は CWD 相対で解決されるため、
+  pytest 実行時 CWD（``/app/shared`` 想定）からは見つからない。テスト用に
+  ``Config.set_main_option("script_location", ...)`` で絶対パスへ上書きし、
+  本番運用（worker コンテナ内 ``cd /app/postgres/src && alembic upgrade head``）の
+  挙動を一切変えない方針を採る（agent-rules/00-core-principles.md デグレ防止）。
 """
 
 from __future__ import annotations
@@ -26,6 +31,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 if TYPE_CHECKING:
+    from alembic.config import Config
     import psycopg
     from testcontainers.postgres import PostgresContainer
 
@@ -36,11 +42,35 @@ _DOCKER_UNAVAILABLE_MESSAGE = "docker daemon が利用不可のためスキッ�
 def _repo_root() -> Path:
     """このフィクスチャファイルから見たリポジトリルート。
 
-    tests/unit/db/conftest.py から 3 階層上る。tests/conftest.py の
-    ``repo_root`` フィクスチャと同じパスを指すが、session 開始前から
-    使うためフィクスチャに依存しない関数として独立させる。
+    postgres/tests/unit/db/conftest.py から 4 階層上る
+    （db → unit → tests → postgres → リポジトリルート）。
+    postgres/tests/conftest.py の ``repo_root`` フィクスチャと同じパスを
+    指すが、session 開始前から使うためフィクスチャに依存しない関数として
+    独立させる。
     """
-    return Path(__file__).resolve().parents[3]
+    return Path(__file__).resolve().parents[4]
+
+
+def make_alembic_config(repo_root: Path) -> Config:
+    """テスト用に alembic Config を組み立てる共通ヘルパ。
+
+    ``alembic.ini`` の ``script_location = alembic`` は CWD 相対で解釈されるため、
+    pytest 実行 CWD（shared/）からは ``alembic`` ディレクトリが見えず
+    ``CommandError: Path doesn't exist: alembic`` で失敗する。本ヘルパでは
+    ``script_location`` を ``postgres/src/alembic`` の絶対パスへ上書きし、
+    どの CWD で呼ばれても確実に解決できるようにする。
+
+    本番運用（``cd /app/postgres/src && alembic upgrade head``）には影響しない。
+    """
+    from alembic.config import Config
+
+    ini_path = repo_root / "postgres" / "src" / "alembic.ini"
+    config = Config(str(ini_path))
+    config.set_main_option(
+        "script_location",
+        str(repo_root / "postgres" / "src" / "alembic"),
+    )
+    return config
 
 
 @pytest.fixture(scope="session")
@@ -76,7 +106,6 @@ def applied_database(postgres_container: PostgresContainer) -> str:
         psycopg 接続用の DSN（``postgresql://`` 形式、SQLAlchemy ドライバ接頭辞なし）。
     """
     from alembic import command
-    from alembic.config import Config
 
     sqlalchemy_url = postgres_container.get_connection_url()
     psycopg_dsn = postgres_container.get_connection_url(driver=None)
@@ -85,7 +114,7 @@ def applied_database(postgres_container: PostgresContainer) -> str:
     # session 終了で破棄されるため、復元処理は不要。
     os.environ["DATABASE_URL"] = sqlalchemy_url
 
-    config = Config(str(_repo_root() / "alembic.ini"))
+    config = make_alembic_config(_repo_root())
     command.upgrade(config, "head")
 
     return psycopg_dsn
