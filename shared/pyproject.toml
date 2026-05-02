@@ -99,6 +99,7 @@ testpaths = [
     "../tests",
     "../worker/tests",
     "../api/tests",
+    "../postgres/tests",
 ]
 addopts = [
     "-ra",
@@ -126,6 +127,7 @@ src = [
     "../tests",
     "../api/tests",
     "../worker/tests",
+    "../postgres/tests",
 ]
 
 [tool.ruff.lint]
@@ -155,6 +157,7 @@ ignore = [
 "../tests/**" = ["N802", "N803", "N806", "RUF001", "RUF002", "RUF003"]
 "../worker/tests/**" = ["N802", "N803", "N806", "RUF001", "RUF002", "RUF003"]
 "../api/tests/**" = ["N802", "N803", "N806", "RUF001", "RUF002", "RUF003"]
+"../postgres/tests/**" = ["N802", "N803", "N806", "RUF001", "RUF002", "RUF003"]
 # alembic は自動生成ファイルが多くスタイル統一を強制しない。
 "../postgres/src/alembic/versions/*.py" = ["E501", "N999"]
 
@@ -175,6 +178,7 @@ include = [
     "../api/tests",
     "../worker/tests",
     "../postgres/src/alembic",
+    "../postgres/tests",
 ]
 # CWD = /workspace/shared を起点として、リポジトリルート（=/workspace）と
 # 各サービスの src ルートを import 解決パスに加える。

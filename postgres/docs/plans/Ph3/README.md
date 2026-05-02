@@ -33,7 +33,7 @@ last_updated: 2026-05-01
 | ヘルスチェック変更 | 不要 | – |
 | `transactions.raw_payload` JSONB の利用拡張 | 不要 | API レスポンスでは `raw_payload` を返さない方針（PII リスク、`docs/design/05-security-model.md` §10.2） |
 
-`agent-rules/00-core-principles.md` 絶対遵守の3原則 §1 デグレッション防止に従い、**既存スキーマと既存テスト（`tests/unit/db/`）を壊さない** ことを最優先する。
+`agent-rules/00-core-principles.md` 絶対遵守の3原則 §1 デグレッション防止に従い、**既存スキーマと既存テスト（`postgres/tests/unit/db/`）を壊さない** ことを最優先する。
 
 ## Phase 4 への申し送り
 
