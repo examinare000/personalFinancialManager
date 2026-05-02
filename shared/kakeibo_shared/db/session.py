@@ -22,8 +22,11 @@ if TYPE_CHECKING:
 def create_db_engine(settings: Settings) -> Engine:
     """Settings から SQLAlchemy エンジンを生成する。
 
-    psycopg3 ドライバを使うため URL は ``postgresql+psycopg://`` を推奨するが、
-    ``postgresql://`` でも psycopg2 が無い環境では psycopg3 が暗黙採用される。
+    psycopg3 ドライバを使うため URL は ``postgresql+psycopg://`` を必須とする。
+    ``postgresql://`` 接頭辞は SQLAlchemy 2.x が ``psycopg2`` のエイリアスとして
+    解決するため、psycopg2 が未インストールな本リポジトリでは
+    ``ModuleNotFoundError: psycopg2`` で失敗する。``+psycopg`` を明示することで
+    psycopg3 を選択する（``shared/pyproject.toml`` の依存と整合）。
     """
     return create_engine(settings.database_url, future=True)
 
