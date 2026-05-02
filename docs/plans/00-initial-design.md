@@ -459,7 +459,7 @@ services:
     build: ./api
     depends_on: [postgres]
     environment:
-      DATABASE_URL: postgresql://kakeibo@postgres:5432/kakeibo
+      DATABASE_URL: postgresql+psycopg://kakeibo@postgres:5432/kakeibo
       ANTHROPIC_API_KEY_FILE: /run/secrets/anthropic_key
     secrets:
       - anthropic_key
@@ -472,7 +472,7 @@ services:
       - ./inbox:/inbox:rw
       - ./archive:/archive:rw
     environment:
-      DATABASE_URL: postgresql://kakeibo@postgres:5432/kakeibo
+      DATABASE_URL: postgresql+psycopg://kakeibo@postgres:5432/kakeibo
       INBOX_PATH: /inbox
     networks: [internal]
 

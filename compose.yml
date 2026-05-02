@@ -44,7 +44,7 @@ services:
       # 上書き読込（同パス）を許容する設計。
       - ./shared:/app/shared:ro
     environment:
-      DATABASE_URL: postgresql://kakeibo@postgres:5432/kakeibo
+      DATABASE_URL: postgresql+psycopg://kakeibo@postgres:5432/kakeibo
       PG_PASSWORD_FILE: /run/secrets/pg_password
       ANTHROPIC_API_KEY_FILE: /run/secrets/anthropic_key
       TZ: Asia/Tokyo
@@ -82,7 +82,7 @@ services:
       - ./postgres/src/alembic:/app/postgres/src/alembic:ro
       - ./postgres/src/alembic.ini:/app/postgres/src/alembic.ini:ro
     environment:
-      DATABASE_URL: postgresql://kakeibo@postgres:5432/kakeibo
+      DATABASE_URL: postgresql+psycopg://kakeibo@postgres:5432/kakeibo
       PG_PASSWORD_FILE: /run/secrets/pg_password
       ANTHROPIC_API_KEY_FILE: /run/secrets/anthropic_key
       PAYPAL_API_SECRET_FILE: /run/secrets/paypal_api_secret

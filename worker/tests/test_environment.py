@@ -40,7 +40,7 @@ def test_設定クラスが環境変数からDATABASE_URLを読める(monkeypatc
     Docker Compose の environment 経由で渡される URL を、Settings で
     一貫して読み取れることを確認する。
     """
-    test_url = "postgresql://kakeibo:secret@postgres:5432/kakeibo"
+    test_url = "postgresql+psycopg://kakeibo:secret@postgres:5432/kakeibo"
     monkeypatch.setenv("DATABASE_URL", test_url)
     monkeypatch.delenv("PG_PASSWORD_FILE", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY_FILE", raising=False)
@@ -62,7 +62,7 @@ def test_DocSecretのFILE規約で値を取得できる(
     secret_file = tmp_path / "pg_password.txt"
     secret_file.write_text("secret_value\n", encoding="utf-8")
 
-    monkeypatch.setenv("DATABASE_URL", "postgresql://x@y:5432/z")
+    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://x@y:5432/z")
     monkeypatch.setenv("PG_PASSWORD_FILE", str(secret_file))
 
     from kakeibo_shared.config import Settings
@@ -125,7 +125,7 @@ def test_alembic_envがDATABASE_URLを参照する(
     ADR-014 によりマイグレーション資産は ``postgres/src/alembic/`` 配下に移動済み。
     env.py を import して `_resolve_database_url()` を直接呼ぶ。
     """
-    test_url = "postgresql://kakeibo:pw@postgres:5432/kakeibo"
+    test_url = "postgresql+psycopg://kakeibo:pw@postgres:5432/kakeibo"
     monkeypatch.setenv("DATABASE_URL", test_url)
 
     # postgres/src/alembic/ ディレクトリを sys.path に追加して env をモジュールとして読む

@@ -69,7 +69,7 @@ related_adrs:
 | PayPal Client ID | Docker secret | Read-only Transactions | 6ヶ月 | PayPal Developer Dashboard で再発行 |
 | PayPal Secret | Docker secret | Read-only Transactions | 6ヶ月 | 同上 |
 | Anthropic API Key | Docker secret | プロジェクト単位 | 6ヶ月 | Anthropic Console から revoke + 新規発行 |
-| PostgreSQL Password | Docker secret | DB アクセス | 12ヶ月 | DBパスワード変更 + secret 更新 |
+| PostgreSQL Password | Docker secret (`/run/secrets/pg_password`, `PG_PASSWORD_FILE` 経由 → `Settings.pg_password` → `build_database_url` で `URL.set(password=...)` 注入。ADR-016) | DB アクセス | 12ヶ月 | DBパスワード変更 + secret 更新 |
 | age 秘密鍵 | NAS外（紙メモ + 物理金庫） | バックアップ復号 | 不変（紛失時のみ再生成） | バックアップを再暗号化 |
 | Tailscale 認証 | 各端末 OS Keychain | tailnet メンバ | デバイス単位で管理 | デバイスを admin console から削除 |
 
