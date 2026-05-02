@@ -32,7 +32,7 @@ last_updated: 2026-05-01
 | `postgres` ヘルスチェックの変更 | 不要 | – |
 | `transactions.raw_payload` のキー命名規約の合意 | 推奨（指示書レベルで完結） | Amazon/楽天/Yahoo/PayPal で共通の JSON キー命名（例: `order_id`, `transaction_id`, `points_used`）を `worker/Ph2/04〜07` の各指示書で固定済み |
 
-`agent-rules/00-core-principles.md` 絶対遵守の3原則 §1 デグレッション防止に従い、**既存スキーマと既存テスト（`tests/unit/db/`）を壊さない** ことを最優先する。
+`agent-rules/00-core-principles.md` 絶対遵守の3原則 §1 デグレッション防止に従い、**既存スキーマと既存テスト（`postgres/tests/unit/db/`）を壊さない** ことを最優先する。
 
 ## Phase 4 への申し送り
 
