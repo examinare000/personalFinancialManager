@@ -6,6 +6,7 @@ last_updated: 2026-05-01
 related_adrs:
   - ADR-001
   - ADR-007
+  - ADR-018
 ---
 
 # 取込アダプタ詳細設計
@@ -65,7 +66,7 @@ from decimal import Decimal
 from typing import Any, Optional
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Transaction:
     account_key: str            # (institution, account_no) を識別する文字列
     occurred_on: date
@@ -76,9 +77,10 @@ class Transaction:
     currency: str = "JPY"
     raw_payload: dict[str, Any] = field(default_factory=dict)
     source_file: Optional[str] = None
+    hash: Optional[str] = None  # ADR-017 に基づき算出
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class Holding:
     account_key: str
     symbol: str
@@ -90,7 +92,7 @@ class Holding:
     raw_payload: dict[str, Any] = field(default_factory=dict)
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class BalanceSnapshot:
     account_key: str
     as_of: date

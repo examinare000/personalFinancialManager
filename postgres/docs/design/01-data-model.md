@@ -166,7 +166,7 @@ CREATE INDEX ON transactions USING GIN (raw_payload jsonb_path_ops);
 | `counterparty` | 相手先（メール由来は店舗名等を抽出） |
 | `category_source` | 分類経路。`rule`/`llm`/`manual` で再学習対象を区別 |
 | `category_confidence` | LLM分類時の確信度（0.000〜1.000） |
-| `linked_tx_id` | 連動取引（カード利用→銀行引落）のリンク（ADR-006、`worker/docs/design/06-reconciler.md`） |
+| `linked_tx_id` | 連動取引（カード利用→銀行引落）のリンク（ADR-017、`worker/docs/design/06-reconciler.md`） |
 | `raw_payload` | 元レコード全体のJSON保持。再パース可能 |
 | `hash` | 冪等性用のSHA256。詳細は §5 |
 
@@ -225,7 +225,7 @@ CREATE INDEX ON categorization_rules (priority) WHERE is_active = TRUE;
 | `raw_payload` JSONB保持 | 元レコードを失わない | パーサ改修時に再変換可能。データレイク発想（ADR-004） |
 | `amount` NUMERIC(18,4) | float禁止 | 投信口数や為替で丸め誤差が致命的（ADR-005） |
 | `quantity` NUMERIC(18,6) | 投信口数の精度確保 | ひふみ等の口数は小数6桁まで使用 |
-| `hash` UNIQUE | 冪等性保証 | 再取込での重複を防ぐ（ADR-006） |
+| `hash` UNIQUE | 冪等性保証 | 再取込での重複を防ぐ（ADR-017） |
 | `linked_tx_id` 自己参照 | 連動取引の事後リンク | カード利用と引落を後から連結 |
 | `holdings` と `balance_snapshots` の併存 | 二重持ち | 整合性検証に活用 |
 | `category_source` | 分類経路を明示 | 再学習・LLM評価指標用 |
@@ -233,7 +233,7 @@ CREATE INDEX ON categorization_rules (priority) WHERE is_active = TRUE;
 | マルチ通貨設計 | `currency` カラムを各テーブルに保持 | 現状はJPYのみだが将来拡張余地（§11） |
 | 削除しない設計 | 物理削除なし | `is_active` フラグで論理削除 |
 
-## 5. hash の生成規則（ADR-006）
+## 5. hash の生成規則（ADR-017）
 
 ```
 hash = SHA256(
@@ -264,7 +264,7 @@ hash = SHA256(
 
 | 制約 | 目的 |
 |---|---|
-| `transactions.hash` UNIQUE | 冪等性（ADR-006） |
+| `transactions.hash` UNIQUE | 冪等性（ADR-017） |
 | `accounts(institution, account_no)` UNIQUE | 同一口座の重複防止 |
 | `holdings(account_id, symbol, as_of)` UNIQUE | スナップショット重複防止 |
 | `balance_snapshots(account_id, as_of)` PK | 同上 |

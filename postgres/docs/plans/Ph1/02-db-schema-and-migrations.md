@@ -27,8 +27,8 @@ last_updated: 2026-04-30
 ### 背景
 
 - Phase1 のすべてのタスクが本タスク完了を起点として進行するため、最上流のクリティカルパス上にある（`01-development-plan.md` §5）。
-- 関連 ADR は ADR-004（PostgreSQL 16 + JSONB）, ADR-005（NUMERIC 型採用）, ADR-006（hash UNIQUE） の 3 本で、いずれも本タスクの実装で初めて具体化される。
-- マイグレーションの粒度は「institutions / accounts」「categories」「transactions」「holdings / balance_snapshots」「categorization_rules」の 5 ファイルに分割し、1 PR 内で 5 コミットに分けて履歴をたどりやすくする（`01-development-plan.md` §4.1 補足）。
+- 関連 ADR は ADR-004（PostgreSQL 16 + JSONB）, ADR-005（NUMERIC 型採用）, ADR-017（hash UNIQUE）, ADR-019（マイグレーション分割） の 4 本で、いずれも本タスクの実装で初めて具体化される。
+- マイグレーションの粒度は「institutions / accounts」「categories」「transactions」「holdings / balance_snapshots」「categorization_rules」の 5 ファイルに分割し、1 PR 内で 5 コミットに分けて履歴をたどりやすくする（ADR-019）。
 
 ## スコープ
 

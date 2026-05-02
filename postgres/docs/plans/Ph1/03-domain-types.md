@@ -12,9 +12,9 @@ last_updated: 2026-04-30
 
 ## タスク概要
 
-各取込アダプタが返す**正規化済みドメインオブジェクト**を `dataclass` (or pydantic) でアプリ層に定義し、Phase 1.1 で確立した DB スキーマと型レベルで対応付ける。`compute_hash(account_id, occurred_on, amount, description)` を決定的な SHA256 として実装し、ADR-006 の冪等性戦略をコードで担保する。
+各取込アダプタが返す**正規化済みドメインオブジェクト**を `dataclass` (or pydantic) でアプリ層に定義し、Phase 1.1 で確立した DB スキーマと型レベルで対応付ける。`compute_hash(account_id, occurred_on, amount, description, raw_payload)` を決定的な SHA256 として実装し、ADR-017 の冪等性戦略をコードで担保する。
 
-参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.2, `postgres/docs/design/01-data-model.md`, `worker/docs/design/02-ingest-adapters.md`。
+参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.2, `postgres/docs/design/01-data-model.md`, `worker/docs/design/02-ingest-adapters.md`, ADR-018。
 
 ## 目的・背景
 
@@ -22,13 +22,15 @@ last_updated: 2026-04-30
 
 - アダプタ層の出力契約を `Transaction` / `Holding` / `BalanceSnapshot` ドメイン型として固定し、Phase 1.3 以降のアダプタ実装が同じ型を返すことで型エラーが検出されるようにする。
 - `Decimal` 型による金額表現（ADR-005）を Python 層で徹底し、`float` 混入を型レベルで防ぐ。
-- ハッシュ生成関数を 1 箇所に集約し、機関ごとのアダプタ実装で再発明されないようにする（ADR-006）。
+- ハッシュ生成関数を 1 箇所に集約し、機関ごとのアダプタ実装で再発明されないようにする（ADR-017）。
 
 ### 背景
 
 - DB スキーマ（Phase 1.1）が確定しても、アプリ層の型がバラバラだと各アダプタが独自に dict を返してしまい、CLI 永続化層で重複正規化コードが発生する。
 - 共通型は「アダプタの戻り値 → CLI / Watcher の入力」という契約点であり、Phase 2 以降のメールパーサ・API クライアントも同じ型を再利用する。
 - `Decimal` の通貨コード（ISO 4217 3 文字）バリデーションを最初から強制しないと、Phase 4 の集計で「JPY と USD を合算」のような誤りが入り込む余地が残る。
+- 実装方針として ADR-018 に従い標準 dataclass を採用する。
+
 
 ## スコープ
 
