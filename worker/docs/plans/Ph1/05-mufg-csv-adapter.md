@@ -16,6 +16,10 @@ last_updated: 2026-04-30
 
 参照: `docs/plans/01-development-plan.md` §4.1 Phase 1.4, §3.1 完了条件 (b)（冪等性）, `worker/docs/design/02-ingest-adapters.md`, リスク R-08（文字コード固定）。
 
+## 修正履歴・レビュー反映
+
+- 2026-05-02: `worker/docs/design/02-ingest-adapters.md` の概念設計では `account_key: str` を用いていたが、Phase 1 の実装簡略化（DB ID 直結）方針に従い `account_id: int` を使用することを明記。
+
 ## 目的・背景
 
 ### 目的
