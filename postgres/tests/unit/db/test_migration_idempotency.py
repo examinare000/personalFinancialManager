@@ -20,28 +20,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from alembic.config import Config
-
     import psycopg
-
-
-def _make_alembic_config(repo_root: Path) -> Config:
-    """テスト用に alembic Config を組み立てる小ヘルパ。
-
-    ``alembic.ini`` の ``script_location = alembic`` は CWD 相対で解釈される
-    （CWD=shared/ では見つからず CommandError）ため、ここで絶対パスに上書きする。
-    conftest.make_alembic_config と同等の振る舞いだが、テストファイルから
-    隣接 conftest.py の関数を直接 import するのを避けるため重複させている。
-    """
-    from alembic.config import Config
-
-    ini_path = repo_root / "postgres" / "src" / "alembic.ini"
-    config = Config(str(ini_path))
-    config.set_main_option(
-        "script_location",
-        str(repo_root / "postgres" / "src" / "alembic"),
-    )
-    return config
 
 
 _LATEST_REVISION = "0005"
@@ -73,6 +52,7 @@ def test_2回目のupgrade_headが例外なく成功する(
     本テストは「実装が標準仕様から外れていない」ことを担保する回帰防止テスト。
     """
     from alembic import command
+    from alembic.config import Config
 
     # applied_database フィクスチャで DATABASE_URL は既に設定済みだが、
     # 明示的に検証して契約を固定する。
@@ -80,7 +60,7 @@ def test_2回目のupgrade_headが例外なく成功する(
         "applied_database フィクスチャ後に DATABASE_URL が設定されていません"
     )
 
-    config = _make_alembic_config(repo_root)
+    config = Config(str(repo_root / "postgres" / "src" / "alembic.ini"))
     # ここで例外が出れば pytest が失敗扱いにする。明示の assert は不要。
     command.upgrade(config, "head")
 
@@ -96,8 +76,9 @@ def test_2回目upgrade後のリビジョンが末端と一致する(
     末端リビジョン名が変われば本テストは失敗し、命名規約からの逸脱を検出する。
     """
     from alembic import command
+    from alembic.config import Config
 
-    config = _make_alembic_config(repo_root)
+    config = Config(str(repo_root / "postgres" / "src" / "alembic.ini"))
     command.upgrade(config, "head")
 
     with psycopg_connection.cursor() as cur:
@@ -123,10 +104,11 @@ def test_2回目upgrade前後でテーブル数が一致する(
     spec §テスト計画3「テーブル数が変化しない」を直接固定する。
     """
     from alembic import command
+    from alembic.config import Config
 
     before = _count_public_tables(psycopg_connection)
 
-    config = _make_alembic_config(repo_root)
+    config = Config(str(repo_root / "postgres" / "src" / "alembic.ini"))
     command.upgrade(config, "head")
 
     # 別接続でカウントを取り直す（カタログ更新の即時反映確認）。
