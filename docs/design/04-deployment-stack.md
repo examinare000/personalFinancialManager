@@ -47,7 +47,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://kakeibo@postgres:5432/kakeibo
+      DATABASE_URL: postgresql+psycopg://kakeibo@postgres:5432/kakeibo
       ANTHROPIC_API_KEY_FILE: /run/secrets/anthropic_key
       TZ: Asia/Tokyo
     secrets:
@@ -66,7 +66,7 @@ services:
       - ./archive:/archive:rw
       - ./dead_letter:/dead_letter:rw
     environment:
-      DATABASE_URL: postgresql://kakeibo@postgres:5432/kakeibo
+      DATABASE_URL: postgresql+psycopg://kakeibo@postgres:5432/kakeibo
       INBOX_PATH: /inbox
       ARCHIVE_PATH: /archive
       DEAD_LETTER_PATH: /dead_letter

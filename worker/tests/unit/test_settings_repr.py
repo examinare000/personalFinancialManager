@@ -40,7 +40,7 @@ def test_settings_reprがpasswordをマスクする(
     secret_file = tmp_path / "pg_password.txt"
     secret_file.write_text(f"{secret_value}\n", encoding="utf-8")
 
-    monkeypatch.setenv("DATABASE_URL", "postgresql://x@y:5432/z")
+    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://x@y:5432/z")
     monkeypatch.setenv("PG_PASSWORD_FILE", str(secret_file))
     # 他の secret 系 env が CI で残っていても干渉しないよう明示的に解除する。
     monkeypatch.delenv("ANTHROPIC_API_KEY_FILE", raising=False)
@@ -77,7 +77,7 @@ def test_settings_reprが非機密フィールドはマスクしない(
     ``_SENSITIVE_KEYWORDS`` に該当するフィールドだけに限定されている
     ことを検証する。
     """
-    db_url = "postgresql://kakeibo@postgres:5432/kakeibo"
+    db_url = "postgresql+psycopg://kakeibo@postgres:5432/kakeibo"
     monkeypatch.setenv("DATABASE_URL", db_url)
     monkeypatch.delenv("PG_PASSWORD_FILE", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY_FILE", raising=False)
