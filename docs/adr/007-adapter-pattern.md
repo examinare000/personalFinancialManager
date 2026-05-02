@@ -70,3 +70,31 @@ class IngestAdapter(ABC):
 - 共通の `Transaction` / `Holding` データクラスを `adapters/types.py` に定義
 - アダプタは「原本（payload）→ 共通型」の純粋変換関数として実装し、DB 書き込みは別レイヤ（`Reconciler` 等）が担う（設計書 §3.1, §3.2）
 - 新規機関追加の手順がドキュメント化しやすくなる: 「(1) サンプル原本を fixtures に配置 → (2) ゴールデンマスタテストを書く → (3) アダプタ実装 → (4) 機関マスタに登録」
+
+### Phase 1.3 確定事項（2026-05-02 追記）
+
+Phase 1.3「IngestAdapter ABC」実装時に以下 4 点を確定した。`worker/docs/design/02-ingest-adapters.md` §2.1〜2.2 の旧記述（`account_key` / `extract_holdings` デフォルト実装 / `Payload` に `Path` を含む / `extract_balance` 言及）とは Phase 1.2 共通型確定後の最新合意で乖離しているため、以下を本 ADR で唯一の正規仕様とする。design/02 本体の整合更新は別 Phase で対応。
+
+1. **コンストラクタ注入で `account_id: int` を保持**
+   - シグネチャ: `__init__(self, *, account_id: int)`（keyword-only 必須）
+   - `parse(payload)` / `extract_holdings(payload)` の引数は `payload` のみ。可変引数や `**context` 拡張は採用しない
+   - 理由: 「アダプタ = 1 口座にバインド」を契約として固定し、Phase 1.4 / 1.5 機関別実装の均質化を優先
+
+2. **`Payload` 型を `bytes | str | dict[str, Any]` で固定**
+   - design/02 §2.1 の `Path` を含む Union から変更
+   - CSV はファイル読込後の `bytes`、メールは `str` / `bytes`、API は `dict` で全機関を吸収
+   - 理由: ファイル読込責務は呼出側（Phase 1.6 取込 CLI）に分離。アダプタは「I/O なしの純粋変換」を維持
+
+3. **`extract_holdings` を `@abstractmethod` 化**
+   - design/02 §2.1 のデフォルト実装案（`return iter(())`）から変更
+   - 各サブクラスで `return iter(())` を明示させる
+   - 理由: 「holdings 未対応」を暗黙化しない、型安全性とコードレビュー時の意図確認を担保
+
+4. **`source: ClassVar[str]` を `__init_subclass__` で検証**
+   - 未設定 / 非 `str` / 空文字列・空白のみはクラス定義時に `TypeError`（``value.strip() == ""`` で whitespace-only も弾く）
+   - `cls.__dict__` 直参照で「サブクラス自身が定義したか」を厳密判定（親 `ClassVar` 宣言だけで誤通過させない）
+   - 理由: アダプタ登録ミスを実行直前ではなくロード時に検出する Fail Fast
+
+公開範囲: `worker/src/kakeibo_worker/adapters/__init__.py` からの `IngestAdapter` re-export は本 Phase では行わない。Phase 1.4 で `ADAPTER_REGISTRY` 導入時にパブリック API 設計を併せて再判断する。
+
+例外型（`AdapterError` 等）は本 Phase では宣言せず、Phase 1.4 で MUFG CSV アダプタが実際に raise する箇所を実装するときに同タスク内で導入する（YAGNI）。
