@@ -5,6 +5,10 @@
   を解決する（agent-rules/12-security-guidelines.md §認証情報）
 - ``resolve_database_url()`` をモジュール公開関数として切り出し、
   単体テストで URL 解決ロジックだけを検証可能にする（tests/test_environment.py）
+- 実 engine 構築には ``kakeibo_shared.db.session.build_database_url`` を使い、
+  Docker secret 経由のパスワードを ``URL.set`` で注入する（ADR-016）。
+  ``resolve_database_url()`` は文字列レベルの環境変数解決のみを責務とする
+  後方互換 API として残置する
 - ``alembic.context`` の属性参照（``context.config`` 等）は CLI 実行時に
   Alembic ランタイムが下準備をした後でしか有効でないため、pytest からの
   単純 import で AttributeError にならないよう try/except でガードする
@@ -21,11 +25,15 @@ from alembic import context
 
 
 def resolve_database_url() -> str:
-    """環境変数 ``DATABASE_URL`` から接続文字列を取得する。
+    """環境変数 ``DATABASE_URL`` から接続文字列を取得する（後方互換 API）。
 
     alembic.ini の ``${DATABASE_URL}`` プレースホルダ展開だけでは、
     pytest からテストする際に ConfigParser の補間タイミングが揃わないため、
     本関数を独立させて単体テストの対象とする。
+
+    実際の engine 構築では ``build_database_url`` を経由し、Docker secret 由来の
+    パスワードを ``URL.set`` で注入する（ADR-016）。本関数は文字列レベルの
+    環境変数解決のみを責務とし、worker/tests/test_environment.py の契約を保つ。
     """
     url = os.environ.get("DATABASE_URL")
     if not url:
@@ -42,7 +50,16 @@ target_metadata: Any = None
 
 
 def run_migrations_offline() -> None:
-    """オフラインモード（SQL スクリプト出力）でマイグレーションを実行する。"""
+    """オフラインモード（SQL スクリプト出力）でマイグレーションを実行する。
+
+    オフラインモードは SQL スクリプトを生成するだけで実 DB に接続しないため、
+    Docker secret 経由のパスワード注入は不要。``build_database_url`` が
+    ``URL`` オブジェクトを返すのは ``URL.__repr__`` で password が ``***`` に
+    マスクされる利点を活かすため（接続用途）だが、オフラインモードで生成される
+    SQL スクリプトの URL 表記には password を一切含めない方が安全（防御的設計）。
+    そのため ``resolve_database_url()`` の戻り値（password 抜きの URL 文字列）を
+    そのまま使用し、``build_database_url`` 経路（``URL`` オブジェクト）は通さない。
+    """
     url = resolve_database_url()
     context.configure(
         url=url,
@@ -55,18 +72,23 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """オンラインモードで実 DB に接続してマイグレーションを実行する。"""
-    # 重い import は CLI 実行時にだけ行う（テストからの import を軽くする）。
-    from sqlalchemy import engine_from_config, pool
+    """オンラインモードで実 DB に接続してマイグレーションを実行する。
 
-    config = context.config
-    ini_section = config.get_section(config.config_ini_section) or {}
-    ini_section["sqlalchemy.url"] = resolve_database_url()
-    connectable = engine_from_config(
-        ini_section,
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    ``build_database_url`` 経由で Settings から ``URL`` を構築することで、
+    ``DATABASE_URL`` がパスワード抜きで宣言されている場合でも
+    ``PG_PASSWORD_FILE`` 経由のパスワードが ``URL.set`` で注入される（ADR-016）。
+    ``alembic.ini`` の ``sqlalchemy.url`` プレースホルダは経由せず、
+    構築済み ``Engine`` を直接 connect する。
+    """
+    # 重い import は CLI 実行時にだけ行う（テストからの import を軽くする）。
+    from sqlalchemy import create_engine, pool
+
+    from kakeibo_shared.config import Settings
+    from kakeibo_shared.db.session import build_database_url
+
+    settings = Settings()  # pyright: ignore[reportCallIssue]
+    url_obj = build_database_url(settings)
+    connectable = create_engine(url_obj, poolclass=pool.NullPool, future=True)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
