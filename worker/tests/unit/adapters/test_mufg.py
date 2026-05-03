@@ -7,7 +7,8 @@
   （``Transaction`` の 10 フィールド、``compute_hash`` 経由のハッシュ値含む）
 - 出金 / 入金の符号正規化（出金 → 負、入金 → 正）
 - UTF-8 ペイロードでの ``EncodingMismatchError``（chardet 不採用、R-08）
-- 必須列欠損での ``ColumnMissingError``（4 列ぶん parametrize）
+- 必須列欠損での ``ColumnMissingError``
+  （4 列ぶん parametrize: 日付 / 摘要 / 支払い金額 / 預かり金額）
 - 数値化不能行 / 出金入金両方空 / 両方値あり での ``MalformedRowError``
 - ハッシュ決定性（同じ CSV を 2 回 parse → ``tx.hash`` 完全一致）
 - ``extract_holdings`` が空イテラブルを返す（plan §実装方針1）
@@ -44,21 +45,42 @@ def _build_csv(rows: list[dict[str, str]]) -> bytes:
     ``rows`` は列名 → 値の dict。値が空欄の列は ``""`` を渡す（DictReader 挙動と整合）。
     数値の桁区切り（カンマ）はテスト側で必要なら ``csv`` モジュール非経由で
     そのまま埋め込んでも良いが、本ヘルパーは安全のためカンマ含み値を quote する。
+
+    実 MUFG CSV のフォーマットに合わせ、ヘッダは 9 列（日付 / 摘要 / 摘要内容 /
+    支払い金額 / 預かり金額 / 差引残高 / メモ / 未資金化区分 / 入払区分）で構築する。
+    必須は 4 列（日付・摘要・支払い金額・預かり金額）のみで、``摘要内容`` ほかの
+    列は空欄でも parse 可能（plan §実装方針3 / §REQUIRED_COLUMNS）。
     """
     import csv as _csv
     import io
 
     buf = io.StringIO()
     writer = _csv.writer(buf, quoting=_csv.QUOTE_MINIMAL, lineterminator="\n")
-    writer.writerow(["日付", "摘要", "お支払金額", "お預り金額", "差引残高"])
+    writer.writerow(
+        [
+            "日付",
+            "摘要",
+            "摘要内容",
+            "支払い金額",
+            "預かり金額",
+            "差引残高",
+            "メモ",
+            "未資金化区分",
+            "入払区分",
+        ]
+    )
     for row in rows:
         writer.writerow(
             [
                 row.get("日付", ""),
                 row.get("摘要", ""),
-                row.get("お支払金額", ""),
-                row.get("お預り金額", ""),
+                row.get("摘要内容", ""),
+                row.get("支払い金額", ""),
+                row.get("預かり金額", ""),
                 row.get("差引残高", ""),
+                row.get("メモ", ""),
+                row.get("未資金化区分", ""),
+                row.get("入払区分", ""),
             ]
         )
     return buf.getvalue().encode("shift_jis")
@@ -175,7 +197,7 @@ def test_MufgCsvAdapter_parseはサンプルCSVから期待Transactionリスト�
 
 
 # ---------------------------------------------------------------------------
-# 4. 出金行の符号正規化 — お支払金額 → amount 負
+# 4. 出金行の符号正規化 — 支払い金額 → amount 負
 # ---------------------------------------------------------------------------
 
 
@@ -193,8 +215,8 @@ def test_MufgCsvAdapterは出金行のamountを負値に正規化する() -> Non
             {
                 "日付": "2026/04/01",
                 "摘要": "出金テスト",
-                "お支払金額": "1234",
-                "お預り金額": "",
+                "支払い金額": "1234",
+                "預かり金額": "",
                 "差引残高": "100000",
             }
         ]
@@ -210,7 +232,7 @@ def test_MufgCsvAdapterは出金行のamountを負値に正規化する() -> Non
 
 
 # ---------------------------------------------------------------------------
-# 5. 入金行の符号正規化 — お預り金額 → amount 正
+# 5. 入金行の符号正規化 — 預かり金額 → amount 正
 # ---------------------------------------------------------------------------
 
 
@@ -227,8 +249,8 @@ def test_MufgCsvAdapterは入金行のamountを正値に正規化する() -> Non
             {
                 "日付": "2026/04/01",
                 "摘要": "入金テスト",
-                "お支払金額": "",
-                "お預り金額": "5678",
+                "支払い金額": "",
+                "預かり金額": "5678",
                 "差引残高": "100000",
             }
         ]
@@ -277,16 +299,18 @@ def test_MufgCsvAdapterはShiftJIS以外のpayloadでEncodingMismatchErrorを送
 
 @pytest.mark.parametrize(
     "missing_column",
-    ["日付", "摘要", "お支払金額", "お預り金額"],
+    ["日付", "摘要", "支払い金額", "預かり金額"],
 )
 def test_MufgCsvAdapterは必須列欠損のCSVでColumnMissingErrorを送出する(
     missing_column: str,
 ) -> None:
     """plan §テスト計画4 / §受入条件: 必須 4 列のいずれかが欠損で ``ColumnMissingError``。
 
-    必須列は Transaction を組み立てるのに必要な 4 列（日付 / 摘要 / お支払金額 / お預り金額）。
-    ``差引残高`` は raw_payload に保持はするが Transaction 構築には使わないため必須ではない
-    （plan §実装ガイドライン §モジュール定数 ``REQUIRED_COLUMNS``）。
+    必須列は Transaction を組み立てるのに必要な 4 列（日付 / 摘要 / 支払い金額 / 預かり金額）。
+    ``摘要内容`` ``差引残高`` 等は raw_payload に保持はするが Transaction 構築には使わないため
+    必須ではない（plan §実装ガイドライン §モジュール定数 ``REQUIRED_COLUMNS``）。
+    なお ``摘要内容`` は description 連結に使うが、空欄なら ``rstrip()`` で吸収するため
+    列自体が無くても ``row.get("摘要内容", "")`` で空文字列フォールバックする方針。
     """
     # Given: 必須列を 1 つ抜いた CSV ヘッダ（行は空でもヘッダ解析で弾ける想定）
     import io
@@ -294,7 +318,17 @@ def test_MufgCsvAdapterは必須列欠損のCSVでColumnMissingErrorを送出す
     from kakeibo_worker.adapters.errors import ColumnMissingError
     from kakeibo_worker.adapters.mufg import MufgCsvAdapter
 
-    columns = ["日付", "摘要", "お支払金額", "お預り金額", "差引残高"]
+    columns = [
+        "日付",
+        "摘要",
+        "摘要内容",
+        "支払い金額",
+        "預かり金額",
+        "差引残高",
+        "メモ",
+        "未資金化区分",
+        "入払区分",
+    ]
     columns.remove(missing_column)
     buf = io.StringIO()
     buf.write(",".join(columns) + "\n")
@@ -309,7 +343,7 @@ def test_MufgCsvAdapterは必須列欠損のCSVでColumnMissingErrorを送出す
 
 
 # ---------------------------------------------------------------------------
-# 8. 数値化不能 — お支払金額が "abc" 等で MalformedRowError
+# 8. 数値化不能 — 支払い金額が "abc" 等で MalformedRowError
 # ---------------------------------------------------------------------------
 
 
@@ -320,7 +354,7 @@ def test_MufgCsvAdapterは出金額が数値化できない行でMalformedRowErr
     §実装方針5「アダプタ例外は ``AdapterError`` 派生」規約に従い専用例外で揃える。
     生 ``ValueError`` を素通しすると CLI 側で例外区別が困難になるため。
     """
-    # Given: お支払金額が文字列 "abc" の 1 行 CSV
+    # Given: 支払い金額が文字列 "abc" の 1 行 CSV
     from kakeibo_worker.adapters.errors import MalformedRowError
     from kakeibo_worker.adapters.mufg import MufgCsvAdapter
 
@@ -329,8 +363,8 @@ def test_MufgCsvAdapterは出金額が数値化できない行でMalformedRowErr
             {
                 "日付": "2026/04/01",
                 "摘要": "数値化不能テスト",
-                "お支払金額": "abc",
-                "お預り金額": "",
+                "支払い金額": "abc",
+                "預かり金額": "",
                 "差引残高": "100000",
             }
         ]
@@ -362,8 +396,8 @@ def test_MufgCsvAdapterは出金額入金額が両方空の行でMalformedRowErr
             {
                 "日付": "2026/04/01",
                 "摘要": "両方空テスト",
-                "お支払金額": "",
-                "お預り金額": "",
+                "支払い金額": "",
+                "預かり金額": "",
                 "差引残高": "100000",
             }
         ]
@@ -394,8 +428,8 @@ def test_MufgCsvAdapterは出金額入金額が両方値ありの行でMalformed
             {
                 "日付": "2026/04/01",
                 "摘要": "両方値ありテスト",
-                "お支払金額": "1000",
-                "お預り金額": "500",
+                "支払い金額": "1000",
+                "預かり金額": "500",
                 "差引残高": "100000",
             }
         ]
@@ -481,8 +515,8 @@ def test_MufgCsvAdapterは日付フォーマット不正の行でMalformedRowErr
             {
                 "日付": "2026-04-01",
                 "摘要": "日付フォーマット不正テスト",
-                "お支払金額": "1234",
-                "お預り金額": "",
+                "支払い金額": "1234",
+                "預かり金額": "",
                 "差引残高": "100000",
             }
         ]
@@ -510,7 +544,7 @@ def test_MufgCsvAdapterは出金額が空白文字列の行でMalformedRowError�
     回帰防止の目的で固定する（``.strip()`` 化等は plan に明示されておらず、
     挙動変更はスコープ外）。
     """
-    # Given: お支払金額が空白のみ "   " の 1 行 CSV（""との非一致で
+    # Given: 支払い金額が空白のみ "   " の 1 行 CSV（""との非一致で
     # has_withdrawal=True と扱われる経路）
     from kakeibo_worker.adapters.errors import MalformedRowError
     from kakeibo_worker.adapters.mufg import MufgCsvAdapter
@@ -520,8 +554,8 @@ def test_MufgCsvAdapterは出金額が空白文字列の行でMalformedRowError�
             {
                 "日付": "2026/04/01",
                 "摘要": "空白文字列テスト",
-                "お支払金額": "   ",
-                "お預り金額": "",
+                "支払い金額": "   ",
+                "預かり金額": "",
                 "差引残高": "100000",
             }
         ]
@@ -541,8 +575,11 @@ def test_MufgCsvAdapterは出金額が空白文字列の行でMalformedRowError�
 @pytest.mark.parametrize(
     "non_bytes_payload",
     [
-        "日付,摘要,お支払金額,お預り金額,差引残高\n2026/04/01,テスト,1234,,100000\n",
-        {"日付": "2026/04/01", "摘要": "dict 不正", "お支払金額": "1234"},
+        (
+            "日付,摘要,摘要内容,支払い金額,預かり金額,差引残高,メモ,未資金化区分,入払区分\n"
+            "2026/04/01,テスト,詳細,1234,,100000,,,振替支払い\n"
+        ),
+        {"日付": "2026/04/01", "摘要": "dict 不正", "支払い金額": "1234"},
     ],
     ids=["str", "dict"],
 )
@@ -568,3 +605,55 @@ def test_MufgCsvAdapterはbytes以外のpayloadでTypeErrorを送出する(
     with pytest.raises(TypeError) as exc_info:
         list(adapter.parse(non_bytes_payload))  # type: ignore[arg-type]
     assert not isinstance(exc_info.value, AdapterError)
+
+
+# ---------------------------------------------------------------------------
+# 15. 摘要内容差分でのハッシュ衝突回避 — 同日同摘要同額でも摘要内容が異なれば別ハッシュ
+# ---------------------------------------------------------------------------
+
+
+def test_MufgCsvAdapterは摘要が同一でも摘要内容が異なれば異なるハッシュを生成する() -> None:
+    """description 連結方針（``摘要 + " " + 摘要内容``）による hash 衝突回避を担保する。
+
+    実 MUFG CSV では ``摘要`` が「口座振替３」のような汎用カテゴリで、同日に同額の取引が
+    複数件並ぶ運用がある（カード会社別の月次引落等）。``摘要`` 単独を description として
+    採用すると、``compute_hash(account_id, occurred_on, amount, description)`` の 4 引数が
+    完全一致して同一ハッシュが衝突し、UNIQUE 制約で取込が片方落ちる回帰がある。
+    本テストは「``摘要内容`` の差分が hash 入力に反映される」契約を回帰防止として固定する。
+
+    ADR-006 の trim/normalize 不採用方針（境界条件 Phase 1.7 確定）と、本連結方針は別論点。
+    連結は 4 引数のうち ``description`` 経由で衝突回避材料を増やす目的で行う
+    （正準化ではなく入力情報量の確保）。
+    """
+    # Given: 同日・同摘要・同額・摘要内容のみ異なる 2 行 CSV
+    from kakeibo_worker.adapters.mufg import MufgCsvAdapter
+
+    payload = _build_csv(
+        [
+            {
+                "日付": "2026/04/15",
+                "摘要": "口座振替３",
+                "摘要内容": "ＭＨＦ）カンリヒトウ",
+                "支払い金額": "8,500",
+                "預かり金額": "",
+                "差引残高": "100000",
+            },
+            {
+                "日付": "2026/04/15",
+                "摘要": "口座振替３",
+                "摘要内容": "ＡＵ ＰＡＹ カ−ド",
+                "支払い金額": "8,500",
+                "預かり金額": "",
+                "差引残高": "91500",
+            },
+        ]
+    )
+    adapter = MufgCsvAdapter(account_id=1)
+
+    # When: parse を実体化して各 Transaction の hash を集める
+    transactions = list(adapter.parse(payload))
+    hashes = {tx.hash for tx in transactions}
+
+    # Then: 2 件とも生成され、hash は重複しない（衝突回避が成立している）
+    assert len(transactions) == 2
+    assert len(hashes) == 2
