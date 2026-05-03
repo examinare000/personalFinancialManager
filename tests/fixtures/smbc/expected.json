@@ -1,0 +1,95 @@
+{
+  "account_id": 42,
+  "transactions": [
+    {
+      "account_id": 42,
+      "occurred_on": "2026-04-01",
+      "occurred_at": null,
+      "amount": "-1000",
+      "currency": "JPY",
+      "description": "コンビニローソン",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "年月日": "2026/04/01",
+        "お引出し": "1,000",
+        "お預入れ": "",
+        "お取り扱い内容": "コンビニ　ローソン",
+        "残高": "99,000"
+      },
+      "hash": "534dee51c1e19beb5d8be04d073e2161da18efcd92cefae7e1a18d7df1845ea2"
+    },
+    {
+      "account_id": 42,
+      "occurred_on": "2026-04-05",
+      "occurred_at": null,
+      "amount": "50000",
+      "currency": "JPY",
+      "description": "給与 振込",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "年月日": "2026/04/05",
+        "お引出し": "",
+        "お預入れ": "50,000",
+        "お取り扱い内容": "給与 振込",
+        "残高": "149,000"
+      },
+      "hash": "7a6a4c7f74308852a756e75222e6196a9d89768e8d7f32a7d945c6c4daeeec8b"
+    },
+    {
+      "account_id": 42,
+      "occurred_on": "2026-04-10",
+      "occurred_at": null,
+      "amount": "-2500",
+      "currency": "JPY",
+      "description": "スーパーマルエツ",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "年月日": "2026/04/10",
+        "お引出し": "2,500",
+        "お預入れ": "",
+        "お取り扱い内容": "スーパー　マルエツ",
+        "残高": "146,500"
+      },
+      "hash": "35007f7858cf9d8bbe4eea48d18ef280f2a74651ebe019ea1eb24728727b6343"
+    },
+    {
+      "account_id": 42,
+      "occurred_on": "2026-04-15",
+      "occurred_at": null,
+      "amount": "-12345",
+      "currency": "JPY",
+      "description": "公共料金",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "年月日": "2026/04/15",
+        "お引出し": "12,345",
+        "お預入れ": "",
+        "お取り扱い内容": "公共料金",
+        "残高": "134,155"
+      },
+      "hash": "2481a45cccfb6e3b2ea4ad7c82ef9514a4418f6e567e87dc31a9002b03a55556"
+    },
+    {
+      "account_id": 42,
+      "occurred_on": "2026-04-20",
+      "occurred_at": null,
+      "amount": "1000",
+      "currency": "JPY",
+      "description": "還付",
+      "category_id": null,
+      "category_source": null,
+      "raw_payload": {
+        "年月日": "2026/04/20",
+        "お引出し": "",
+        "お預入れ": "1,000",
+        "お取り扱い内容": "還付",
+        "残高": "135,155"
+      },
+      "hash": "b6cdc4d09ed9fab49f13d329337f3ec46ce1f37d17f080dc1b194d710a14f809"
+    }
+  ]
+}
