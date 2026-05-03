@@ -37,15 +37,26 @@ from kakeibo_worker.adapters.errors import (
 MUFG_ENCODING = "shift_jis"
 
 # plan §実装方針3 で固定される列名。テストとも同一の文字列を共有するため定数化する。
-# ``差引残高`` 列は Transaction 構築に使わず ``raw_payload`` に文字列のままパススルー
+# 実 MUFG CSV は 9 列構造（日付 / 摘要 / 摘要内容 / 支払い金額 / 預かり金額 /
+# 差引残高 / メモ / 未資金化区分 / 入払区分）。``差引残高`` ``メモ`` ``未資金化区分``
+# ``入払区分`` 列は Transaction 構築に使わず ``raw_payload`` に文字列のままパススルー
 # されるだけのため、production では指名しない（定数化は対称性目的の dead code になる）。
 COLUMN_OCCURRED_ON = "日付"
 COLUMN_DESCRIPTION = "摘要"
-COLUMN_WITHDRAWAL = "お支払金額"
-COLUMN_DEPOSIT = "お預り金額"
+# ``摘要内容`` は description に連結する（hash 衝突回避目的）。
+# MUFG CSV では ``摘要`` が「口座振替３」のような汎用カテゴリで、同日同額の取引が
+# 並ぶ場合に compute_hash の 4 引数（account_id / occurred_on / amount / description）が
+# 完全一致してハッシュ衝突する回帰がある。``摘要内容`` を連結することで取引相手の
+# 差分が hash 入力に反映される。なお ADR-006 の trim/normalize 不採用方針（境界条件は
+# Phase 1.7 で確定）と本連結は別論点で、正準化ではなく入力情報量の確保が目的。
+COLUMN_DESCRIPTION_DETAIL = "摘要内容"
+COLUMN_WITHDRAWAL = "支払い金額"
+COLUMN_DEPOSIT = "預かり金額"
 
-# Transaction 構築に必要な 4 列のみを必須とする（``差引残高`` は raw_payload に保持はする
-# が Transaction 構築には使わないため必須ではない: plan §実装ガイドライン §REQUIRED_COLUMNS）。
+# Transaction 構築に必要な 4 列のみを必須とする（``摘要内容`` ``差引残高`` 等は
+# raw_payload に保持はするが Transaction 構築には ``摘要内容`` の空欄を許容するため
+# 必須ではない: plan §実装ガイドライン §REQUIRED_COLUMNS）。
+# ``摘要内容`` は ``row.get(COLUMN_DESCRIPTION_DETAIL, "")`` で空文字列フォールバックする。
 REQUIRED_COLUMNS: tuple[str, ...] = (
     COLUMN_OCCURRED_ON,
     COLUMN_DESCRIPTION,
@@ -101,15 +112,22 @@ class MufgCsvAdapter(IngestAdapter):
         """1 行の ``DictReader`` 出力から ``Transaction`` を構築する。
 
         ``raw_payload`` には ``DictReader`` の行 dict をそのまま保持する
-        （``差引残高`` を含む全列の文字列値が残る、plan §実装ガイドライン §_to_transaction 4）。
+        （``摘要内容`` ``差引残高`` ``メモ`` ``未資金化区分`` ``入払区分`` を含む 9 列分の
+        文字列値が残る、plan §実装ガイドライン §_to_transaction 4）。
         ``csv.DictReader`` は行毎に独立した dict を yield するため、防御的な
         ``dict(...)`` コピーは不要（plan §_to_transaction 4「そのまま渡す」と整合）。
         """
         occurred_on = _parse_date(row[COLUMN_OCCURRED_ON])
         amount = _parse_amount(row[COLUMN_WITHDRAWAL], row[COLUMN_DEPOSIT])
-        # plan §実装方針6: 摘要の trim/normalize は ADR-006 のハッシュ正準化と
-        # 二重処理になるため行わない。
-        description = row[COLUMN_DESCRIPTION]
+        # description は ``摘要 + " " + 摘要内容`` の空白連結を ``rstrip()`` で末尾整形。
+        # ``摘要内容`` 単独の trim/normalize は ADR-006 のハッシュ正準化境界条件
+        # （Phase 1.7 で確定）と二重処理になるため行わない。連結だけが本ステップの責務で、
+        # 「``摘要`` 単独では汎用カテゴリ衝突が起きる」回帰を hash 入力情報量で回避する。
+        # ``摘要内容`` 列が CSV に存在しない（必須列ではない）場合に備え ``row.get`` で
+        # 空文字列にフォールバックし、結果として ``rstrip()`` で ``摘要`` 単独に縮退する。
+        description = (
+            f"{row[COLUMN_DESCRIPTION]} {row.get(COLUMN_DESCRIPTION_DETAIL, '')}"
+        ).rstrip()
         return Transaction(
             account_id=self.account_id,
             occurred_on=occurred_on,
