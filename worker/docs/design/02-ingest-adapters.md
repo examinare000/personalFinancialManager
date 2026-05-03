@@ -110,7 +110,7 @@ class BalanceSnapshot:
 |---|---|
 | 入力フォーマット | Shift_JIS CSV（`三菱UFJ_明細_YYYYMMDD.csv`） |
 | 文字コード | `cp932` |
-| 列マッピング | 日付→`occurred_on`、摘要→`description`、お支払金額→`amount`（負）、お預り金額→`amount`（正）、残高→balance_snapshot |
+| 列マッピング | 日付→`occurred_on`、`摘要 + 摘要内容`→`description`（空白連結 + `rstrip()`、hash 衝突回避目的）、支払い金額→`amount`（負）、預かり金額→`amount`（正）、差引残高→balance_snapshot |
 | 残高抽出 | 可（行ごとに残高列あり） |
 | 留意点 | ダイレクトでの履歴保持期間が短く、月初までに必須DL |
 | テストフィクスチャ | `tests/fixtures/mufg/sample_001.csv` |
